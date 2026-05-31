@@ -3,6 +3,10 @@ import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from "fas
 import { ipsRoute } from "./routes/ips-route";
 import fastifyCors from "@fastify/cors";
 import { getServersRoute } from "./routes/get-servers";
+import { createUserRoute } from "./routes/create-user";
+import { loginRoute } from "./routes/login";
+import fastifyJwt from "@fastify/jwt";
+import { env } from "./env";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -13,5 +17,11 @@ app.register(fastifyCors, {
     origin: '*'
 })
 
+app.register(fastifyJwt, {
+  secret: env.JWT_SECRET!,
+})
+
 app.register(ipsRoute)
 app.register(getServersRoute)
+app.register(createUserRoute)
+app.register(loginRoute)

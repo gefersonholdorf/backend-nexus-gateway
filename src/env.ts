@@ -7,7 +7,9 @@ const envSchema = z.object({
     PORTAINER_URL: z.url(),
     ZABBIX_URL: z.url(),
     ZABBIX_USERNAME: z.string(),
-    ZABBIX_PASSWORD: z.string()
+    ZABBIX_PASSWORD: z.string(),
+    DATABASE_URL: z.url(),
+    JWT_SECRET: z.string()
 })
 
 export const env = envSchema.parse(process.env)
