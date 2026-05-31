@@ -2,6 +2,7 @@ import fastify from "fastify";
 import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from "fastify-type-provider-zod";
 import { ipsRoute } from "./routes/ips-route";
 import fastifyCors from "@fastify/cors";
+import { getServersRoute } from "./routes/get-servers";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -13,3 +14,4 @@ app.register(fastifyCors, {
 })
 
 app.register(ipsRoute)
+app.register(getServersRoute)
