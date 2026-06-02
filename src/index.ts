@@ -7,6 +7,7 @@ import { createUserRoute } from "./routes/create-user";
 import { loginRoute } from "./routes/login";
 import fastifyJwt from "@fastify/jwt";
 import { env } from "./env";
+import { getProblemsRoute } from "./routes/get-problems";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -25,3 +26,4 @@ app.register(ipsRoute)
 app.register(getServersRoute)
 app.register(createUserRoute)
 app.register(loginRoute)
+app.register(getProblemsRoute)
