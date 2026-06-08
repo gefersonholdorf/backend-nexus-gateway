@@ -8,6 +8,8 @@ import { loginRoute } from "./routes/login";
 import fastifyJwt from "@fastify/jwt";
 import { env } from "./env";
 import { getProblemsRoute } from "./routes/get-problems";
+import { getProblemsTimelineRoute } from "./routes/get-problems-timeline";
+import { getProblemsDetailsRoute } from "./routes/get-problems-details";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -27,3 +29,5 @@ app.register(getServersRoute)
 app.register(createUserRoute)
 app.register(loginRoute)
 app.register(getProblemsRoute)
+app.register(getProblemsTimelineRoute)
+app.register(getProblemsDetailsRoute)

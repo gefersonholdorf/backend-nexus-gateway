@@ -18,9 +18,9 @@ export const loginRoute = async (app: FastifyInstance) => {
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: {
-          email,
+          ds_email: email,
         },
       });
 
@@ -32,7 +32,7 @@ export const loginRoute = async (app: FastifyInstance) => {
 
       const passwordMatch = await bcrypt.compare(
         password,
-        user.password
+        user.ds_password
       );
 
       if (!passwordMatch) {
@@ -43,10 +43,10 @@ export const loginRoute = async (app: FastifyInstance) => {
 
       const token = await reply.jwtSign(
         {
-          email: user.email,
+          email: user.ds_email,
         },
         {
-          sub: user.id,
+          sub: String(user.cd_id),
           expiresIn: "7d",
         }
       );
@@ -54,9 +54,9 @@ export const loginRoute = async (app: FastifyInstance) => {
       return {
         token,
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
+          id: user.cd_id,
+          name: user.ds_name,
+          email: user.ds_email,
         },
       };
     }

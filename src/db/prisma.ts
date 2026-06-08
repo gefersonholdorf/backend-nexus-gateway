@@ -1,10 +1,17 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { env } from '@/env';
+import { eventNames } from 'node:cluster';
 
-const adapter = new PrismaBetterSqlite3({
-  url: 'file:./database.db'
-})
-
-export const prisma = new PrismaClient({
-  adapter
-})
+const adapter = new PrismaMariaDb({
+  host: env.DATABASE_HOST,
+  port: env.DATABASE_PORT,
+  user: env.DATABASE_USER,
+  password: env.DATABASE_PASSWORD,
+  database: env.DATABASE_NAME,
+  connectionLimit: 5,
+});
+export const prisma = new PrismaClient({ 
+  adapter,
+  log: ['error', 'info', 'warn']
+});

@@ -18,16 +18,17 @@ export const createUserRoute = async (app: FastifyInstance) => {
 
         const hash = await bcrypt.hash(password, 10)
 
-        const user = await prisma.user.create({
+        const user = await prisma.users.create({
             data: {
-                name,
-                email,
-                password: hash
+                ds_name: name,
+                ds_email: email,
+                ds_password: hash,
+                dt_updated_at: new Date()
             }
         })
 
         return {
-            id: user.id
+            id: user.cd_id
         }
     })
 }

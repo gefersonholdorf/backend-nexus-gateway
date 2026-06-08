@@ -1,17 +1,16 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
-
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
 }
 
-model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model users {
+  cd_id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  ds_name       String   @db.VarChar(255)
+  ds_email      String   @unique(map: "Index 2") @db.VarChar(255)
+  ds_password   String   @db.VarChar(255)
+  dt_created_at DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at DateTime @db.DateTime(0)
 }

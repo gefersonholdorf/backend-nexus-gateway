@@ -4,9 +4,9 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 interface ZabbixLoginData {
-  "jsonrpc": string
-  "result": string
-  "id": number
+    "jsonrpc": string
+    "result": string
+    "id": number
 }
 
 export interface ZabbixItem {
@@ -33,14 +33,14 @@ export interface ServerMetrics {
     uptime: number
 }
 
-export const getProblemsRoute = async(app: FastifyInstance) => {
-    app.withTypeProvider<ZodTypeProvider>().post("/problems", {
+export const getProblemsDetailsRoute = async (app: FastifyInstance) => {
+    app.withTypeProvider<ZodTypeProvider>().post("/problems/details", {
         schema: {
             body: z.object({
                 hostIds: z.array(z.number())
             })
         }
-    },async (request, reply) => {
+    }, async (request, reply) => {
 
         const { hostIds } = request.body
 
@@ -65,60 +65,28 @@ export const getProblemsRoute = async(app: FastifyInstance) => {
         const token = loginData.result;
 
         const itemsResponse = await fetch(`${env.ZABBIX_URL}/api_jsonrpc.php`,
-        {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-            jsonrpc: "2.0",
-            method: "problem.get",
-            params: {
-                hostids: hostIds,
-                output: "extend"
-            },
-            id: 1
-            })
-        }
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: "problem.get",
+                    params: {
+                        hostids: hostIds,
+                        output: "extend"
+                    },
+                    id: 1
+                })
+            }
         )
 
         const problemsData = await itemsResponse.json() as any
 
-        const summary = {
-        disaster: 0,
-        high: 0,
-        average: 0,
-        warning: 0,
-        information: 0,
-        }
-
-        for (const problem of problemsData.result) {
-        switch (Number(problem.severity)) {
-            case 5:
-            summary.disaster++
-            break
-
-            case 4:
-            summary.high++
-            break
-
-            case 3:
-            summary.average++
-            break
-
-            case 2:
-            summary.warning++
-            break
-
-            case 1:
-            summary.information++
-            break
-        }
-        }
-        
         return reply.status(200).send({
-            incidents: summary
-        }) 
+            problems: problemsData.result
+        })
     })
 }

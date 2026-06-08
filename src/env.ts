@@ -8,7 +8,11 @@ const envSchema = z.object({
     ZABBIX_URL: z.url(),
     ZABBIX_USERNAME: z.string(),
     ZABBIX_PASSWORD: z.string(),
-    DATABASE_URL: z.url(),
+    DATABASE_HOST: z.string(),
+    DATABASE_PORT: z.coerce.number(),
+    DATABASE_USER: z.string(),
+    DATABASE_PASSWORD: z.string(),
+    DATABASE_NAME: z.string(),
     JWT_SECRET: z.string()
 })
 
