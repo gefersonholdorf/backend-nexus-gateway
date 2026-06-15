@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { env } from '@/env';
-import { eventNames } from 'node:cluster';
 
 const adapter = new PrismaMariaDb({
   host: env.DATABASE_HOST,

@@ -11,6 +11,7 @@ import { getProblemsRoute } from "./routes/get-problems";
 import { getProblemsTimelineRoute } from "./routes/get-problems-timeline";
 import { getProblemsDetailsRoute } from "./routes/get-problems-details";
 import { getUsersPrivilegesRoute } from "./routes/servers/users-privileges/get-users-privileges-route";
+import { createPrivilegeRoute } from "./routes/servers/users-privileges/create-privilege-route";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -33,3 +34,4 @@ app.register(getProblemsRoute)
 app.register(getProblemsTimelineRoute)
 app.register(getProblemsDetailsRoute)
 app.register(getUsersPrivilegesRoute)
+app.register(createPrivilegeRoute)

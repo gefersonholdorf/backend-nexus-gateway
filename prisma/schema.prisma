@@ -1,7 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "mysql"
 }
@@ -13,4 +13,17 @@ model users {
   ds_password   String   @db.VarChar(255)
   dt_created_at DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
   dt_updated_at DateTime @db.DateTime(0)
+}
+
+model privileges {
+  cd_id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  ds_user          String   @db.VarChar(100)
+  ds_server        String   @db.VarChar(100)
+  privilege        String   @db.VarChar(100)
+  ds_justification String   @db.VarChar(255)
+  status           String   @db.VarChar(50)
+  dt_start_at      DateTime @db.DateTime(0)
+  dt_expires_at    DateTime @db.DateTime(0)
+  dt_created_at    DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at    DateTime @db.DateTime(0)
 }
