@@ -7,12 +7,17 @@ datasource db {
 }
 
 model users {
-  cd_id         Int      @id @default(autoincrement()) @db.UnsignedInt
-  ds_name       String   @db.VarChar(255)
-  ds_email      String   @unique(map: "Index 2") @db.VarChar(255)
-  ds_password   String   @db.VarChar(255)
-  dt_created_at DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
-  dt_updated_at DateTime @db.DateTime(0)
+  cd_id                   Int          @id @default(autoincrement()) @db.UnsignedInt
+  ds_name                 String       @db.VarChar(255)
+  ds_email                String       @unique(map: "Index 2") @db.VarChar(255)
+  ds_avatar_url           String?      @db.VarChar(100)
+  ds_password             String       @db.VarChar(255)
+  fl_active               Int          @default(0) @db.TinyInt
+  dt_last_login           DateTime?    @db.DateTime(0)
+  dt_last_password_change DateTime?    @db.DateTime(0)
+  dt_created_at           DateTime     @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at           DateTime     @default(now()) @db.DateTime(0)
+  user_roles              user_roles[]
 }
 
 model privileges {
@@ -26,4 +31,40 @@ model privileges {
   dt_expires_at    DateTime @db.DateTime(0)
   dt_created_at    DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
   dt_updated_at    DateTime @db.DateTime(0)
+}
+
+model permissions {
+  cd_id            Int                @id @default(autoincrement()) @db.UnsignedInt
+  ds_key           String             @unique(map: "ds_key") @db.VarChar(100)
+  ds_description   String?            @db.VarChar(255)
+  role_permissions role_permissions[]
+}
+
+model role_permissions {
+  cd_role       Int         @db.UnsignedInt
+  cd_permission Int         @db.UnsignedInt
+  roles         roles       @relation(fields: [cd_role], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "role_permissions_ibfk_1")
+  permissions   permissions @relation(fields: [cd_permission], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "role_permissions_ibfk_2")
+
+  @@id([cd_role, cd_permission])
+  @@index([cd_permission], map: "cd_permission")
+}
+
+model roles {
+  cd_id            Int                @id @default(autoincrement()) @db.UnsignedInt
+  ds_name          String             @db.VarChar(100)
+  ds_description   String?            @db.VarChar(255)
+  dt_created_at    DateTime           @default(now()) @db.DateTime(0)
+  role_permissions role_permissions[]
+  user_roles       user_roles[]
+}
+
+model user_roles {
+  cd_user Int   @db.UnsignedInt
+  cd_role Int   @db.UnsignedInt
+  users   users @relation(fields: [cd_user], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "user_roles_ibfk_1")
+  roles   roles @relation(fields: [cd_role], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "user_roles_ibfk_2")
+
+  @@id([cd_user, cd_role])
+  @@index([cd_role], map: "cd_role")
 }

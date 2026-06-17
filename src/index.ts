@@ -1,37 +1,65 @@
 import fastify from "fastify";
-import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from "fastify-type-provider-zod";
-import { ipsRoute } from "./routes/ips-route";
+import {
+	serializerCompiler,
+	validatorCompiler,
+	jsonSchemaTransform,
+	type ZodTypeProvider,
+} from "fastify-type-provider-zod";
 import fastifyCors from "@fastify/cors";
-import { getServersRoute } from "./routes/get-servers";
-import { createUserRoute } from "./routes/create-user";
-import { loginRoute } from "./routes/login";
 import fastifyJwt from "@fastify/jwt";
 import { env } from "./env";
-import { getProblemsRoute } from "./routes/get-problems";
-import { getProblemsTimelineRoute } from "./routes/get-problems-timeline";
-import { getProblemsDetailsRoute } from "./routes/get-problems-details";
-import { getUsersPrivilegesRoute } from "./routes/servers/users-privileges/get-users-privileges-route";
-import { createPrivilegeRoute } from "./routes/servers/users-privileges/create-privilege-route";
+import fastifySwagger from "@fastify/swagger";
+import fastifyScalar from "@scalar/fastify-api-reference";
+import { routes } from "./routes";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+app.register(fastifySwagger, {
+	openapi: {
+		info: {
+			title: "DeployerX API",
+			version: "1.0.0",
+		},
+		servers: [
+			{
+				url: `http://localhost:3336`,
+				description: "Development server",
+			},
+			{
+				url: `http://127.0.0.1:3333`,
+				description: "Production server",
+			},
+		],
+		components: {
+			securitySchemes: {
+				ApiKeyAuth: {
+					type: "apiKey",
+					name: "Authorization",
+					in: "header",
+				},
+			},
+		},
+	},
+	transform: jsonSchemaTransform,
+});
+
+app.register(fastifyScalar, {
+	routePrefix: "/docs",
+	logLevel: "silent",
+	configuration: {
+		theme: "kepler",
+	},
+});
+
 app.register(fastifyCors, {
-    origin: '*'
-})
+	origin: "*",
+});
 
 app.register(fastifyJwt, {
-  secret: env.JWT_SECRET!,
-})
+	secret: env.JWT_SECRET,
+});
 
-app.register(ipsRoute)
-app.register(getServersRoute)
-app.register(createUserRoute)
-app.register(loginRoute)
-app.register(getProblemsRoute)
-app.register(getProblemsTimelineRoute)
-app.register(getProblemsDetailsRoute)
-app.register(getUsersPrivilegesRoute)
-app.register(createPrivilegeRoute)
+app.register(routes, { prefix: "api/v1" });
