@@ -29,7 +29,7 @@ app.register(fastifySwagger, {
 				description: "Development server",
 			},
 			{
-				url: `http://127.0.0.1:3333`,
+				url: `http://10.188.15.99:3336`,
 				description: "Production server",
 			},
 		],
@@ -63,3 +63,9 @@ app.register(fastifyJwt, {
 });
 
 app.register(routes, { prefix: "api/v1" });
+
+app.get("/status", (_, reply) => {
+	return reply.status(200).send({
+		status: "UP",
+	});
+});

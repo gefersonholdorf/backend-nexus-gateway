@@ -10,11 +10,15 @@ model users {
   cd_id                   Int          @id @default(autoincrement()) @db.UnsignedInt
   ds_name                 String       @db.VarChar(255)
   ds_email                String       @unique(map: "Index 2") @db.VarChar(255)
+  cd_id_glpi              String       @db.VarChar(255)
+  ds_vpn_name             String       @db.VarChar(255)
   ds_avatar_url           String?      @db.VarChar(100)
   ds_password             String       @db.VarChar(255)
   fl_active               Int          @default(0) @db.TinyInt
   dt_last_login           DateTime?    @db.DateTime(0)
   dt_last_password_change DateTime?    @db.DateTime(0)
+  ds_latitude             String       @db.VarChar(100)
+  ds_longitude            String       @db.VarChar(100)
   dt_created_at           DateTime     @default(dbgenerated("(curdate())")) @db.DateTime(0)
   dt_updated_at           DateTime     @default(now()) @db.DateTime(0)
   user_roles              user_roles[]

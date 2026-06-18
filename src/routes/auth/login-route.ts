@@ -90,8 +90,8 @@ export const loginRoute = async (app: FastifyInstance) => {
 					{
 						email: user.ds_email,
 						name: user.ds_name,
-
-						roles,
+						vpnName: user.ds_vpn_name,
+						idGLPI: String(user.cd_id_glpi),
 						permissions,
 					},
 					{
