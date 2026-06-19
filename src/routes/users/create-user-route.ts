@@ -58,6 +58,10 @@ export const createUserRoute = async (app: FastifyInstance) => {
 						ds_email: email,
 						ds_password: hash,
 						fl_active: flActive ? 1 : 0,
+						cd_id_glpi: "",
+						ds_latitude: "",
+						ds_longitude: "",
+						ds_vpn_name: "",
 					},
 				});
 

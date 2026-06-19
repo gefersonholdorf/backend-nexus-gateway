@@ -33,6 +33,8 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 					200: z.object({
 						availabilitys: z.array(
 							z.object({
+								name: z.string(),
+								logo: z.string().nullable(),
 								scheduleId: z.string(),
 								availabilityView: z.string(),
 							}),
@@ -106,7 +108,15 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 				(await availabilityResponse.json()) as MicrosoftAzureAvailabilitynReponse;
 
 			const availabilitys = availabilityData.value.map((item) => {
+				const user = users.find((user) => user.ds_email === item.scheduleId);
+
+				if (!user) {
+					return;
+				}
+
 				return {
+					name: user.ds_name,
+					logo: user.ds_avatar_url,
 					scheduleId: item.scheduleId,
 					availabilityView: item.availabilityView,
 				};

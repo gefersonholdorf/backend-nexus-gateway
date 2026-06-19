@@ -103,7 +103,7 @@ export interface CalendarAttendee {
 
 export const getAvailabilityUserRoute = async (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().get(
-		"/calendar/",
+		"/calendar",
 		{
 			preHandler: [authenticate],
 			schema: {
