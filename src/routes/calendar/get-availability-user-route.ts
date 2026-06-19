@@ -15,12 +15,30 @@ interface MicrosoftAzureAvailabilitynReponse {
 	value: {
 		scheduleId: string;
 		availabilityView: string;
+		scheduleItems: {
+			isPrivate: false;
+			status: string;
+			subject: string;
+			location: string;
+			isMeeting: boolean;
+			isRecurring: boolean;
+			isException: boolean;
+			isReminderSet: boolean;
+			start: {
+				dateTime: string;
+				timeZone: string;
+			};
+			end: {
+				dateTime: string;
+				timeZone: string;
+			};
+		}[];
 	}[];
 }
 
 interface MicrosoftAzureavailAbilityReponse {}
 
-export const getCalendarRoute = async (app: FastifyInstance) => {
+export const getAvailabilityUserRoute = async (app: FastifyInstance) => {
 	app.get(
 		"/calendar/availability",
 		{
@@ -37,6 +55,26 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 								logo: z.string().nullable(),
 								scheduleId: z.string(),
 								availabilityView: z.string(),
+								scheduleItems: z.array(
+									z.object({
+										status: z.string(),
+										isPrivate: z.boolean().optional(),
+										subject: z.string().optional(),
+										location: z.string().optional(),
+										isMeeting: z.boolean().optional(),
+										isRecurring: z.boolean().optional(),
+										isException: z.boolean().optional(),
+										isReminderSet: z.boolean().optional(),
+										start: z.object({
+											dateTime: z.string(),
+											timeZone: z.string(),
+										}),
+										end: z.object({
+											dateTime: z.string(),
+											timeZone: z.string(),
+										}),
+									}),
+								),
 							}),
 						),
 					}),
@@ -78,8 +116,14 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 
 			const emails = users.map((user) => user.ds_email);
 
-			const now = new Date();
-			const end = new Date(now.getTime() + 5 * 60 * 1000);
+			const today = new Date();
+
+			const year = today.getFullYear();
+			const month = String(today.getMonth() + 1).padStart(2, "0");
+			const day = String(today.getDate()).padStart(2, "0");
+
+			const startDateTime = `${year}-${month}-${day}T08:00:00`;
+			const endDateTime = `${year}-${month}-${day}T18:00:00`;
 
 			const availabilityResponse = await fetch(
 				`https://graph.microsoft.com/v1.0/users/suporte@lusati.com.br/calendar/getSchedule`,
@@ -92,14 +136,14 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 					body: JSON.stringify({
 						schedules: emails,
 						startTime: {
-							dateTime: now.toISOString(),
+							dateTime: startDateTime,
 							timeZone: "E. South America Standard Time",
 						},
 						endTime: {
-							dateTime: end.toISOString(),
+							dateTime: endDateTime,
 							timeZone: "E. South America Standard Time",
 						},
-						availabilityViewInterval: 5,
+						availabilityViewInterval: 30,
 					}),
 				},
 			);
@@ -107,20 +151,23 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 			const availabilityData =
 				(await availabilityResponse.json()) as MicrosoftAzureAvailabilitynReponse;
 
-			const availabilitys = availabilityData.value.map((item) => {
-				const user = users.find((user) => user.ds_email === item.scheduleId);
+			const availabilitys = availabilityData.value
+				.map((item) => {
+					const user = users.find((user) => user.ds_email === item.scheduleId);
 
-				if (!user) {
-					return;
-				}
+					if (!user) {
+						return null;
+					}
 
-				return {
-					name: user.ds_name,
-					logo: user.ds_avatar_url,
-					scheduleId: item.scheduleId,
-					availabilityView: item.availabilityView,
-				};
-			});
+					return {
+						name: user.ds_name,
+						logo: user.ds_avatar_url,
+						scheduleId: item.scheduleId,
+						availabilityView: item.availabilityView,
+						scheduleItems: item.scheduleItems,
+					};
+				})
+				.filter(Boolean);
 
 			return reply.status(200).send({
 				availabilitys,

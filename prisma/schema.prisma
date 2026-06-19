@@ -11,6 +11,8 @@ model users {
   ds_name                 String       @db.VarChar(255)
   ds_email                String       @unique(map: "Index 2") @db.VarChar(255)
   cd_id_glpi              String       @db.VarChar(255)
+  cd_id_microsoft         String       @db.VarChar(255)
+  ds_role_description     String       @db.VarChar(255)
   ds_vpn_name             String       @db.VarChar(255)
   ds_avatar_url           String?      @db.VarChar(100)
   ds_password             String       @db.VarChar(255)

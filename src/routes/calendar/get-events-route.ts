@@ -101,7 +101,7 @@ export interface CalendarAttendee {
 	response: "accepted" | "declined" | "tentative" | "none";
 }
 
-export const getAvailabilityUserRoute = async (app: FastifyInstance) => {
+export const getCalendarRoute = async (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().get(
 		"/calendar",
 		{

@@ -23,6 +23,8 @@ export const loginRoute = async (app: FastifyInstance) => {
 						user: z.object({
 							email: z.email(),
 							name: z.string(),
+							roleDescription: z.string(),
+							logo: z.string().nullable(),
 							roles: z.array(z.string()),
 							permissions: z.array(z.string()),
 						}),
@@ -105,6 +107,8 @@ export const loginRoute = async (app: FastifyInstance) => {
 					user: {
 						email: user.ds_email,
 						name: user.ds_name,
+						logo: user.ds_avatar_url,
+						roleDescription: user.ds_role_description,
 						roles,
 						permissions,
 					},

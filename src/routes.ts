@@ -13,8 +13,9 @@ import { updateMeRoute } from "./routes/users/update-me-route";
 import { changePasswordMeRoute } from "./routes/users/change-password-me-route";
 import { getVPNDetailsRoute } from "./routes/users/get-vpn-details-route";
 import { getSummaryTicketsRoute } from "./routes/users/get-summary-tickets-route";
-import { getCalendarRoute } from "./routes/calendar/get-availability-user-route";
-import { getAvailabilityUserRoute } from "./routes/calendar/get-events-route";
+import { getPresenceUserRoute } from "./routes/calendar/get-presence-user-route";
+import { getAvailabilityUserRoute } from "./routes/calendar/get-availability-user-route";
+import { getCalendarRoute } from "./routes/calendar/get-events-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -27,6 +28,7 @@ export const routes = async (app: FastifyInstance) => {
 
 	app.register(getAvailabilityUserRoute);
 	app.register(getCalendarRoute);
+	app.register(getPresenceUserRoute);
 
 	app.register(ipsRoute);
 
