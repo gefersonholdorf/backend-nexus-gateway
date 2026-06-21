@@ -116,6 +116,11 @@ export const getEventsSummaryRoute = async (app: FastifyInstance) => {
 				title: "Get Events Summary",
 				description: "View calendar full",
 				tags: ["Calendar"],
+				querystring: z.object({
+					type: z.enum(["user", "full"]),
+					startDate: z.string(),
+					endDate: z.string(),
+				}),
 				response: {
 					200: z.object({
 						summary: z.object({
@@ -146,6 +151,7 @@ export const getEventsSummaryRoute = async (app: FastifyInstance) => {
 		},
 		async (request, reply) => {
 			const { email } = request.user;
+			const { type, startDate, endDate } = request.query;
 
 			const params = new URLSearchParams();
 
@@ -186,25 +192,58 @@ export const getEventsSummaryRoute = async (app: FastifyInstance) => {
 				});
 			}
 
-			const now = new Date("2026-06-11");
+			let events: MicrosoftGraphEvent[] = [];
 
-			const startDate = new Date(now);
-			startDate.setHours(0, 0, 0, 0);
-
-			const endDate = new Date(now);
-			endDate.setHours(23, 59, 59, 999);
-
-			const response = await fetch(
-				`https://graph.microsoft.com/v1.0/users/${email}/calendar/calendarView?startDateTime=${startDate.toISOString()}&endDateTime=${endDate.toISOString()}`,
-				{
-					headers: {
-						Authorization: loginData.access_token,
+			if (type === "user") {
+				const response = await fetch(
+					`https://graph.microsoft.com/v1.0/users/${email}/calendar/calendarView?startDateTime=${startDate}&endDateTime=${endDate}`,
+					{
+						headers: {
+							Authorization: `Bearer ${loginData.access_token}`,
+						},
 					},
-				},
+				);
+
+				const data = (await response.json()) as MicrosoftAzureCalendarReponse;
+
+				events = data.value;
+			}
+
+			const users = await prisma.users.findMany();
+
+			if (type === "full") {
+				const users = await prisma.users.findMany({
+					select: {
+						ds_email: true,
+					},
+				});
+
+				const responses = await Promise.all(
+					users
+						.filter((user) => user.ds_email)
+						.map((user) =>
+							fetch(
+								`https://graph.microsoft.com/v1.0/users/${user.ds_email}/calendar/calendarView?startDateTime=${startDate}&endDateTime=${endDate}`,
+								{
+									headers: {
+										Authorization: `Bearer ${loginData.access_token}`,
+									},
+								},
+							),
+						),
+				);
+
+				const calendars = (await Promise.all(
+					responses.map((response) => response.json()),
+				)) as MicrosoftAzureCalendarReponse[];
+
+				events = calendars.flatMap((calendar) => calendar.value);
+			}
+
+			events = Array.from(
+				new Map(events.map((event) => [event.iCalUId, event])).values(),
 			);
 
-			const { value: events } =
-				(await response.json()) as MicrosoftAzureCalendarReponse;
 			const meetingsToday = events.length;
 
 			const onlineMeetings = events.filter(
