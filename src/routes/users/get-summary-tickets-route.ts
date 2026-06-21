@@ -50,8 +50,6 @@ export const getSummaryTicketsRoute = async (app: FastifyInstance) => {
 
 			const data = (await response.json()) as N8NGetSummaryTicketsReponse[];
 
-			console.log(data);
-
 			if (data.length === 0) {
 				return reply.status(404).send({
 					message: "Tickets not found.",

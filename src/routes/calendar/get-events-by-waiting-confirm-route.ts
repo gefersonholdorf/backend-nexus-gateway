@@ -4,6 +4,7 @@ import { authenticate } from "@/middlewares/authenticate";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import type { FastifyInstance } from "fastify/types/instance";
 import z from "zod";
+import no from "zod/v4/locales/no.js";
 
 interface MicrosoftAzureLoginReponse {
 	token_type: string;
@@ -104,19 +105,15 @@ export interface CalendarAttendee {
 	response: "accepted" | "declined" | "tentative" | "none";
 }
 
-export const getCalendarRoute = async (app: FastifyInstance) => {
+export const getEventsByWaitingConfirmRoute = async (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().get(
-		"/calendar",
+		"/calendar/waiting-confirm",
 		{
 			preHandler: [authenticate],
 			schema: {
-				title: "Get Calendar",
+				title: "Get Events By Waiting Confirm",
 				description: "View calendar full",
 				tags: ["Calendar"],
-				querystring: z.object({
-					startDate: z.string(),
-					endDate: z.string(),
-				}),
 				response: {
 					200: z.object({
 						events: z.array(
@@ -139,8 +136,8 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 									z.object({
 										name: z.string(),
 										email: z.string(),
-										logo: z.string().nullable().optional(),
 										response: z.string(),
+										logo: z.string().nullable().optional(),
 									}),
 								),
 
@@ -152,6 +149,9 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 							}),
 						),
 					}),
+					404: z.object({
+						message: z.string(),
+					}),
 					500: z.object({
 						message: z.string(),
 					}),
@@ -159,7 +159,7 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 			},
 		},
 		async (request, reply) => {
-			const { startDate, endDate } = request.query;
+			const { email } = request.user;
 
 			const params = new URLSearchParams();
 
@@ -188,80 +188,109 @@ export const getCalendarRoute = async (app: FastifyInstance) => {
 				});
 			}
 
+			const user = await prisma.users.findUnique({
+				where: {
+					ds_email: email,
+				},
+			});
+
 			const users = await prisma.users.findMany();
 
-			const emails = users.map((user) => user.ds_email).filter(Boolean);
+			if (!user) {
+				return reply.status(404).send({
+					message: "User not found.",
+				});
+			}
 
-			const responses = await Promise.all(
-				emails.map((email) =>
-					fetch(
-						`https://graph.microsoft.com/v1.0/users/${email}/calendar/calendarView?startDateTime=${startDate}&endDateTime=${endDate}`,
-						{
-							headers: {
-								Authorization: loginData.access_token,
-							},
-						},
-					),
-				),
+			const now = new Date();
+
+			const startDate = now.toISOString();
+
+			now.setMonth(now.getMonth() + 1);
+
+			const endDate = now.toISOString();
+
+			const response = await fetch(
+				`https://graph.microsoft.com/v1.0/users/${email}/calendar/calendarView?startDateTime=${startDate}&endDateTime=${endDate}`,
+				{
+					headers: {
+						Authorization: loginData.access_token,
+					},
+				},
 			);
 
-			const calendars = (await Promise.all(
-				responses.map((response) => response.json()),
-			)) as MicrosoftAzureCalendarReponse[];
+			const events = (await response.json()) as MicrosoftAzureCalendarReponse;
 
-			const allEvents: CalendarEvent[] = calendars.flatMap((calendar) =>
-				calendar.value.map(
-					(event): CalendarEvent => ({
-						id: event.id,
-						iCalUId: event.iCalUId,
+			const eventsWaitingConfirm = events.value
+				.filter((item) => {
+					const existingAttendee = item.attendees.find(
+						(attendee) => attendee.emailAddress.address === email,
+					);
 
-						title: event.subject,
+					if (!existingAttendee) {
+						return;
+					}
 
-						startAt: event.start.dateTime,
-						endAt: event.end.dateTime,
+					if (
+						item.organizer.emailAddress.address ===
+						existingAttendee.emailAddress.address
+					) {
+						return;
+					}
 
-						organizer: {
-							name: event.organizer.emailAddress.name,
-							email: event.organizer.emailAddress.address,
-							logo: users.find(
-								(user) =>
-									user.ds_email === event.organizer.emailAddress.address,
-							)?.ds_avatar_url,
-						},
+					if (
+						existingAttendee.status.response !== "accepted" &&
+						existingAttendee.status.response !== "declined"
+					) {
+						return item;
+					}
+				})
+				.sort(
+					(a, b) =>
+						new Date(a.start.dateTime).getTime() -
+						new Date(b.start.dateTime).getTime(),
+				)
+				.map((event) => ({
+					id: event.id,
+					iCalUId: event.iCalUId,
 
-						attendees: event.attendees.map((attendee) => {
-							const user = users.find(
-								(user) => user.ds_email === attendee.emailAddress.address,
-							);
+					title: event.subject,
 
-							return {
-								name: attendee.emailAddress.name,
-								logo: user?.ds_avatar_url ?? undefined,
-								email: attendee.emailAddress.address,
-								type: attendee.type,
-								response: attendee.status.response,
-							};
-						}),
+					startAt: event.start.dateTime,
+					endAt: event.end.dateTime,
 
-						isOnline: event.isOnlineMeeting,
+					organizer: {
+						name: event.organizer.emailAddress.name,
+						email: event.organizer.emailAddress.address,
+						logo: users.find(
+							(user) => user.ds_email === event.organizer.emailAddress.address,
+						)
+							? user.ds_avatar_url
+							: "",
+					},
 
-						location: event.location?.displayName || undefined,
+					attendees: event.attendees.map((attendee) => {
+						const existingUser = users.find(
+							(u) => u.ds_email === attendee.emailAddress.address,
+						);
 
-						webLink: event.webLink,
+						return {
+							name: attendee.emailAddress.name,
+							email: attendee.emailAddress.address,
+							response: attendee.status.response,
+							logo: existingUser?.ds_avatar_url,
+						};
 					}),
-				),
-			);
 
-			const uniqueEvents = [
-				...new Map(allEvents.map((event) => [event.iCalUId, event])).values(),
-			];
+					isOnline: event.isOnlineMeeting,
 
-			uniqueEvents.sort(
-				(a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
-			);
+					location: event.onlineMeetingUrl ?? event.location?.displayName,
+
+					webLink: event.webLink,
+				}));
 
 			return reply.status(200).send({
-				events: uniqueEvents,
+				events: eventsWaitingConfirm,
 			});
 		},
 	);

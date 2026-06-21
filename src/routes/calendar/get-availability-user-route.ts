@@ -32,7 +32,7 @@ interface MicrosoftAzureAvailabilitynReponse {
 				dateTime: string;
 				timeZone: string;
 			};
-		}[];
+		};
 	}[];
 }
 
