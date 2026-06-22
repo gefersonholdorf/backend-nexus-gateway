@@ -12,13 +12,13 @@ interface MicrosoftAzureLoginReponse {
 	access_token: string;
 }
 
-export const confirmEventByUserRoute = async (app: FastifyInstance) => {
+export const declinedEventByUserRoute = async (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().post(
-		"/calendar/confirm",
+		"/calendar/declined",
 		{
 			preHandler: [authenticate],
 			schema: {
-				title: "Confirm Event By User",
+				title: "Declined Event By User",
 				description: "View calendar full",
 				tags: ["Calendar"],
 				body: z.object({
@@ -85,7 +85,7 @@ export const confirmEventByUserRoute = async (app: FastifyInstance) => {
 
 			try {
 				const response = await fetch(
-					`https://graph.microsoft.com/v1.0/users/${email}/events/${eventId}/accept`,
+					`https://graph.microsoft.com/v1.0/users/${email}/events/${eventId}/declined`,
 					{
 						method: "POST",
 						headers: {

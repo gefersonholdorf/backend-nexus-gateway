@@ -19,6 +19,8 @@ import { getCalendarRoute } from "./routes/calendar/get-events-route";
 import { getEventsSummaryRoute } from "./routes/calendar/get-events-summary-route";
 import { getEventsByWaitingConfirmRoute } from "./routes/calendar/get-events-by-waiting-confirm-route";
 import { confirmEventByUserRoute } from "./routes/calendar/confirm-event-by-user";
+import { declinedEventByUserRoute } from "./routes/calendar/declined-event-by-user";
+import { getNextEventsRoute } from "./routes/calendar/get-nexts-events-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -35,6 +37,8 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getEventsSummaryRoute);
 	app.register(getEventsByWaitingConfirmRoute);
 	app.register(confirmEventByUserRoute);
+	app.register(declinedEventByUserRoute);
+	app.register(getNextEventsRoute);
 
 	app.register(ipsRoute);
 
