@@ -62,6 +62,8 @@ export const createUserRoute = async (app: FastifyInstance) => {
 						ds_latitude: "",
 						ds_longitude: "",
 						ds_vpn_name: "",
+						cd_id_microsoft: "",
+						ds_role_description: "",
 					},
 				});
 
