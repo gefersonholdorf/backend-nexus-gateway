@@ -74,3 +74,15 @@ model user_roles {
   @@id([cd_user, cd_role])
   @@index([cd_role], map: "cd_role")
 }
+
+model documents {
+  cd_id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  ds_code        String   @db.VarChar(50)
+  ds_title       String   @db.VarChar(200)
+  ds_category    String   @db.VarChar(200)
+  ds_status      String   @db.VarChar(100)
+  ds_responsible String   @db.VarChar(100)
+  ds_url         String   @db.VarChar(255)
+  dt_created_at  DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at  DateTime @db.DateTime(0)
+}
