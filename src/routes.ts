@@ -26,6 +26,7 @@ import { createUserRoute } from "./routes/users/create-user-route";
 import { getSummaryTicketsRoute } from "./routes/users/get-summary-tickets-route";
 import { getVPNDetailsRoute } from "./routes/users/get-vpn-details-route";
 import { updateMeRoute } from "./routes/users/update-me-route";
+import { getSummaryJira } from "./routes/jira/teste";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -35,6 +36,8 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getSummaryTicketsRoute);
 
 	app.register(loginRoute);
+
+	app.register(getSummaryJira)
 
 	app.register(getAvailabilityUserRoute);
 	app.register(getCalendarRoute);

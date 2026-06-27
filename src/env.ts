@@ -20,6 +20,7 @@ const envSchema = z.object({
 	AZURE_TENANT_ID: z.string(),
 	AZURE_CLIENT_ID: z.string(),
 	AZURE_CLIENT_SECRET: z.string(),
+	TOKEN_JIRA: z.string()
 });
 
 export const env = envSchema.parse(process.env);
