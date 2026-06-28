@@ -26,7 +26,9 @@ import { createUserRoute } from "./routes/users/create-user-route";
 import { getSummaryTicketsRoute } from "./routes/users/get-summary-tickets-route";
 import { getVPNDetailsRoute } from "./routes/users/get-vpn-details-route";
 import { updateMeRoute } from "./routes/users/update-me-route";
-import { getSummaryJira } from "./routes/jira/teste";
+import { getSummaryJira } from "./routes/jira/get-summary-user";
+import { fetchProfilesRoute } from "./routes/profile/fetch-profiles-route";
+import { getProfileByIdRoute } from "./routes/profile/get-profile-by-id";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -53,6 +55,9 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getDocumentsRoute)
 	app.register(deleteDocumentRoute)
 	app.register(getSummaryDocumentsRoute)
+
+	app.register(fetchProfilesRoute)
+	app.register(getProfileByIdRoute)
 
 	app.register(ipsRoute);
 

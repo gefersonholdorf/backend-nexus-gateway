@@ -60,6 +60,7 @@ model roles {
   cd_id            Int                @id @default(autoincrement()) @db.UnsignedInt
   ds_name          String             @db.VarChar(100)
   ds_description   String?            @db.VarChar(255)
+  st_status        Int                @default(0) @db.TinyInt
   dt_created_at    DateTime           @default(now()) @db.DateTime(0)
   role_permissions role_permissions[]
   user_roles       user_roles[]

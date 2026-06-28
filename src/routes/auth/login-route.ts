@@ -3,7 +3,6 @@ import type { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 import bcrypt from "bcrypt";
-import { hasPermission } from "@/middlewares/has-permission";
 
 export const loginRoute = async (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().post(
@@ -101,6 +100,15 @@ export const loginRoute = async (app: FastifyInstance) => {
 						expiresIn: "1d",
 					},
 				);
+
+				await prisma.users.update({
+					where: {
+						cd_id: user.cd_id
+					},
+					data: {
+						dt_last_login: new Date()
+					}
+				})
 
 				return reply.status(200).send({
 					token,
