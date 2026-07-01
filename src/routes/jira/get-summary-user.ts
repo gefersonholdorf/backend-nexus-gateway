@@ -8,25 +8,19 @@ function normalizeStatus(status: string): keyof Summary {
     const value = status.trim().toLowerCase()
 
     if (
-        value.includes('conclu') ||
-        value.includes('produção') ||
-        value.includes('done') ||
-        value.includes('finalizado')
+        value.includes('concluídos')
     ) {
         return 'completed'
     }
 
     if (
-        value.includes('corre')
+        value.includes('correção')
     ) {
         return 'correction'
     }
 
     if (
-        value.includes('andamento') ||
-        value.includes('teste') ||
-        value.includes('review') ||
-        value.includes('homolog')
+        value.includes('em andamento')
     ) {
         return 'inProgress'
     }
@@ -70,13 +64,21 @@ export const getSummaryJira = async (app: FastifyInstance) => {
     }, async (request, reply) => {
         const { email } = request.user
         try {
-            const startDate = '2026-06-01'
-            const endDate = '2026-06-30'
+            const now = new Date()
+
+            const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+            const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+            const formatDate = (date: Date) => date.toISOString().split("T")[0]
+
+            const start = formatDate(startDate)
+            const end = formatDate(endDate)
 
             const jql = `
                         assignee = "${email}"
-                        AND updated >= "${startDate}"
-                        AND updated <= "${endDate}"
+                        AND updated >= "${start}"
+                        AND updated <= "${end}"
+                        AND sprint in openSprints()
                     `
             const response = await fetch(
                 'https://lusati.atlassian.net/rest/api/3/search/jql',
@@ -120,6 +122,9 @@ export const getSummaryJira = async (app: FastifyInstance) => {
 
                 summary[normalizedStatus]++
             })
+
+            console.log(summary)
+            console.log(rawStatus)
 
             return reply.send({
                 total: result?.issues?.length ?? 0,
