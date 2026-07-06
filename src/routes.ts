@@ -29,6 +29,9 @@ import { updateMeRoute } from "./routes/users/update-me-route";
 import { getSummaryJira } from "./routes/jira/get-summary-user";
 import { fetchProfilesRoute } from "./routes/profile/fetch-profiles-route";
 import { getProfileByIdRoute } from "./routes/profile/get-profile-by-id";
+import { getPermissionsRoute } from "./routes/profile/get-permissions-route";
+import { createProfileRoute } from "./routes/profile/create-profile-route";
+import { updateProfileRoute } from "./routes/profile/update-profile-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -58,6 +61,9 @@ export const routes = async (app: FastifyInstance) => {
 
 	app.register(fetchProfilesRoute)
 	app.register(getProfileByIdRoute)
+	app.register(getPermissionsRoute)
+	app.register(createProfileRoute)
+	app.register(updateProfileRoute)
 
 	app.register(ipsRoute);
 
