@@ -1,6 +1,5 @@
 import { prisma } from "@/db/prisma";
 import { authenticate } from "@/middlewares/authenticate";
-import { hasPermission } from "@/middlewares/has-permission";
 import type { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
@@ -18,7 +17,7 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                     category: z.string().optional(),
                     status: z.string().optional(),
                     text: z.string().optional(),
-                    responsible: z.string().optional(),
+                    profile: z.string().optional(),
                     page: z.coerce.number().default(1),
                     perPage: z.coerce.number().default(10),
                 }),
@@ -29,10 +28,16 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                                 id: z.number(),
                                 code: z.string(),
                                 category: z.string(),
-                                responsible: z.string(),
                                 status: z.string(),
                                 title: z.string(),
-                                url: z.string(),
+                                viewUrl: z.string().optional().nullable(),
+                                editUrl: z.string().optional().nullable(),
+                                profiles: z.array(z.object({
+                                    id: z.number(),
+                                    name: z.string(),
+                                    description: z.string().nullable()
+                                })),
+                                createdAt: z.string(),
                                 updatedAt: z.string(),
                             })
                         ),
@@ -55,20 +60,23 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
             },
         },
         async (request, reply) => {
-            const { category, responsible, status, text, page, perPage } = request.query;
-            const { roles } = request.user
+            const { category, status, text, profile, page, perPage } = request.query;
 
             const where = {
                 ...(category && {
                     ds_category: category,
                 }),
 
-                ...(responsible && {
-                    ds_responsible: responsible,
-                }),
-
                 ...(status && {
                     ds_status: status,
+                }),
+
+                ...(profile && {
+                    documents_roles: {
+                        some: {
+                            cd_role_id: Number(profile),
+                        },
+                    },
                 }),
 
                 ...(text && {
@@ -96,6 +104,13 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                         orderBy: {
                             dt_updated_at: "desc",
                         },
+                        include: {
+                            documents_roles: {
+                                include: {
+                                    roles: true
+                                }
+                            }
+                        }
                     }),
                     prisma.documents.count({
                         where,
@@ -107,11 +122,17 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                         id: document.cd_id,
                         code: document.ds_code,
                         category: document.ds_category,
-                        responsible: document.ds_responsible,
                         status: document.ds_status,
                         title: document.ds_title,
-                        url: document.ds_url,
+                        viewUrl: document.ds_view_url,
+                        editUrl: document.ds_edit_url,
+                        createdAt: document.dt_created_at.toISOString(),
                         updatedAt: document.dt_updated_at.toISOString(),
+                        profiles: document.documents_roles.map((dr) => ({
+                            id: dr.roles.cd_id,
+                            name: dr.roles.ds_name,
+                            description: dr.roles.ds_description,
+                        })),
                     }
                 })
 

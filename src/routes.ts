@@ -43,7 +43,7 @@ export const routes = async (app: FastifyInstance) => {
 
 	app.register(loginRoute);
 
-	app.register(getSummaryJira)
+	app.register(getSummaryJira);
 
 	app.register(getAvailabilityUserRoute);
 	app.register(getCalendarRoute);

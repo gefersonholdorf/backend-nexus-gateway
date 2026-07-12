@@ -15,7 +15,7 @@ export const getProfilesSelect = async (app: FastifyInstance) => {
                 200: z.object({
                     profiles: z.array(z.object({
                         id: z.number(),
-                        name: z.string()
+                        name: z.string(),
                     }))
                 }),
                 500: z.object({
@@ -35,7 +35,7 @@ export const getProfilesSelect = async (app: FastifyInstance) => {
             return reply.status(200).send({
                 profiles: profiles.map(profile => ({
                     id: profile.cd_id,
-                    name: profile.ds_name
+                    name: profile.ds_name,
                 }))
             })
 

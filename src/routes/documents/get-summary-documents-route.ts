@@ -18,7 +18,7 @@ export const getSummaryDocumentsRoute = async (app: FastifyInstance) => {
                     category: z.string().optional(),
                     status: z.string().optional(),
                     text: z.string().optional(),
-                    responsible: z.string().optional(),
+                    profile: z.string().optional(),
                 }),
                 response: {
                     200: z.object({
@@ -40,7 +40,7 @@ export const getSummaryDocumentsRoute = async (app: FastifyInstance) => {
             },
         },
         async (request, reply) => {
-            const { category, responsible, status, text } = request.query;
+            const { category, profile, status, text } = request.query;
             const { roles } = request.user
 
             const where = {
@@ -48,12 +48,16 @@ export const getSummaryDocumentsRoute = async (app: FastifyInstance) => {
                     ds_category: category,
                 }),
 
-                ...(responsible && {
-                    ds_responsible: responsible,
-                }),
-
                 ...(status && {
                     ds_status: status,
+                }),
+
+                ...(profile && {
+                    documents_roles: {
+                        some: {
+                            cd_role_id: Number(profile),
+                        },
+                    },
                 }),
 
                 ...(text && {

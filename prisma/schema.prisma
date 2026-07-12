@@ -23,6 +23,7 @@ model users {
   ds_longitude            String       @db.VarChar(100)
   dt_created_at           DateTime     @default(dbgenerated("(curdate())")) @db.DateTime(0)
   dt_updated_at           DateTime     @default(now()) @db.DateTime(0)
+  documents               documents[]
   user_roles              user_roles[]
 }
 
@@ -62,6 +63,7 @@ model roles {
   ds_description   String?            @db.VarChar(255)
   st_status        Int                @default(0) @db.TinyInt
   dt_created_at    DateTime           @default(now()) @db.DateTime(0)
+  documents_roles  documents_roles[]
   role_permissions role_permissions[]
   user_roles       user_roles[]
 }
@@ -77,13 +79,29 @@ model user_roles {
 }
 
 model documents {
-  cd_id          Int      @id @default(autoincrement()) @db.UnsignedInt
-  ds_code        String   @db.VarChar(50)
-  ds_title       String   @db.VarChar(200)
-  ds_category    String   @db.VarChar(200)
-  ds_status      String   @db.VarChar(100)
-  ds_responsible String   @db.VarChar(100)
-  ds_url         String   @db.VarChar(255)
-  dt_created_at  DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
-  dt_updated_at  DateTime @db.DateTime(0)
+  cd_id             Int               @id @default(autoincrement()) @db.UnsignedInt
+  ds_code           String            @db.VarChar(50)
+  ds_title          String            @db.VarChar(200)
+  ds_category       String            @db.VarChar(200)
+  ds_status         String            @db.VarChar(100)
+  ds_view_url       String?           @db.LongText
+  ds_edit_url       String?           @db.LongText
+  cd_create_user_id Int               @db.UnsignedInt
+  dt_created_at     DateTime          @default(now()) @db.DateTime(0)
+  dt_updated_at     DateTime          @default(now()) @db.DateTime(0)
+  users             users             @relation(fields: [cd_create_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_users")
+  documents_roles   documents_roles[]
+
+  @@index([cd_create_user_id], map: "FK_documents_users")
+}
+
+model documents_roles {
+  cd_id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  cd_document_id Int       @db.UnsignedInt
+  cd_role_id     Int       @db.UnsignedInt
+  documents      documents @relation(fields: [cd_document_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_roles_documents")
+  roles          roles     @relation(fields: [cd_role_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_roles_roles")
+
+  @@index([cd_document_id], map: "FK_documents_roles_documents")
+  @@index([cd_role_id], map: "FK_documents_roles_roles")
 }

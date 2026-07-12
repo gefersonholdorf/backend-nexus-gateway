@@ -12,15 +12,16 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
             preHandler: [authenticate, hasPermission("documents.create")],
             schema: {
                 title: "Create Document",
-                description: "Create a new Document.",
+                description: "Create a new Document ISO.",
                 tags: ["Documents"],
                 body: z.object({
                     code: z.string(),
                     title: z.string(),
                     category: z.string(),
                     status: z.string(),
-                    responsible: z.string(),
-                    url: z.url()
+                    viewUrl: z.url().optional(),
+                    editUrl: z.url().optional(),
+                    profiles: z.array(z.number())
                 }),
                 response: {
                     201: z.object({
@@ -36,20 +37,32 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
             },
         },
         async (request, reply) => {
-            const { category, responsible, status, title, url, code } = request.body;
+            const { category, profiles, status, title, editUrl, viewUrl, code } = request.body;
+            const { sub } = request.user
 
             try {
-                const document = await prisma.documents.create({
-                    data: {
-                        ds_code: code,
-                        ds_category: category,
-                        ds_responsible: responsible,
-                        ds_status: status,
-                        ds_title: title,
-                        ds_url: url,
-                        dt_updated_at: new Date()
-                    }
-                })
+                const document = await prisma.$transaction(async (tx) => {
+                    const document = await tx.documents.create({
+                        data: {
+                            ds_code: code,
+                            ds_category: category,
+                            ds_status: status,
+                            ds_title: title,
+                            ds_edit_url: editUrl,
+                            ds_view_url: viewUrl,
+                            cd_create_user_id: Number(sub),
+                        },
+                    });
+
+                    await tx.documents_roles.createMany({
+                        data: profiles.map((profileId) => ({
+                            cd_document_id: document.cd_id,
+                            cd_role_id: profileId,
+                        })),
+                    });
+
+                    return document;
+                });
 
                 return reply.status(201).send({
                     documentId: document.cd_id,
