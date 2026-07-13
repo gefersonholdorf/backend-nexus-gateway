@@ -37,6 +37,11 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                                     name: z.string(),
                                     description: z.string().nullable()
                                 })),
+                                createdBy: z.object({
+                                    id: z.number(),
+                                    name: z.string(),
+                                    avatarUrl: z.string().nullable()
+                                }),
                                 createdAt: z.string(),
                                 updatedAt: z.string(),
                             })
@@ -105,6 +110,7 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                             dt_updated_at: "desc",
                         },
                         include: {
+                            users: true,
                             documents_roles: {
                                 include: {
                                     roles: true
@@ -133,6 +139,11 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                             name: dr.roles.ds_name,
                             description: dr.roles.ds_description,
                         })),
+                        createdBy: {
+                            id: document.users.cd_id,
+                            name: document.users.ds_name,
+                            avatarUrl: document.users.ds_avatar_url,
+                        }
                     }
                 })
 

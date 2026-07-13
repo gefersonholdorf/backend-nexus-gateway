@@ -19,8 +19,8 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
                     title: z.string(),
                     category: z.string(),
                     status: z.string(),
-                    viewUrl: z.url().optional(),
-                    editUrl: z.url().optional(),
+                    viewUrl: z.url().nullable(),
+                    editUrl: z.url().nullable(),
                     profiles: z.array(z.number())
                 }),
                 response: {

@@ -14,7 +14,7 @@ export const deleteDocumentRoute = async (app: FastifyInstance) => {
                 title: "Delete Document",
                 description: "Delete a new Document.",
                 tags: ["Documents"],
-                params:z.object({
+                params: z.object({
                     id: z.coerce.number()
                 }),
                 response: {
@@ -34,11 +34,18 @@ export const deleteDocumentRoute = async (app: FastifyInstance) => {
             const { id } = request.params
 
             try {
-                await prisma.documents.delete({
-                    where: {
-                        cd_id: id
-                    }
-                })
+                await prisma.$transaction([
+                    prisma.documents_roles.deleteMany({
+                        where: {
+                            cd_document_id: id,
+                        },
+                    }),
+                    prisma.documents.delete({
+                        where: {
+                            cd_id: id,
+                        },
+                    }),
+                ]);
 
                 return reply.status(200).send({
                     message: "Document successfully deleted"
