@@ -16,6 +16,7 @@ export const getProfilesSelect = async (app: FastifyInstance) => {
                     profiles: z.array(z.object({
                         id: z.number(),
                         name: z.string(),
+                        description: z.string().nullable()
                     }))
                 }),
                 500: z.object({
@@ -28,7 +29,8 @@ export const getProfilesSelect = async (app: FastifyInstance) => {
             const profiles = await prisma.roles.findMany({
                 select: {
                     cd_id: true,
-                    ds_name: true
+                    ds_name: true,
+                    ds_description: true
                 }
             })
 
@@ -36,6 +38,7 @@ export const getProfilesSelect = async (app: FastifyInstance) => {
                 profiles: profiles.map(profile => ({
                     id: profile.cd_id,
                     name: profile.ds_name,
+                    description: profile.ds_description
                 }))
             })
 

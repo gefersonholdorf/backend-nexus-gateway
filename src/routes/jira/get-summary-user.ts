@@ -123,9 +123,6 @@ export const getSummaryJira = async (app: FastifyInstance) => {
                 summary[normalizedStatus]++
             })
 
-            console.log(summary)
-            console.log(rawStatus)
-
             return reply.send({
                 total: result?.issues?.length ?? 0,
                 summary,

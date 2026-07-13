@@ -35,6 +35,12 @@ export const deleteDocumentRoute = async (app: FastifyInstance) => {
 
             try {
                 await prisma.$transaction([
+                    prisma.documents_events.deleteMany({
+                        where: {
+                            cd_document_id: id,
+                        },
+                    }),
+
                     prisma.documents_roles.deleteMany({
                         where: {
                             cd_document_id: id,

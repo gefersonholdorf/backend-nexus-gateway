@@ -33,6 +33,7 @@ import { getPermissionsRoute } from "./routes/profile/get-permissions-route";
 import { createProfileRoute } from "./routes/profile/create-profile-route";
 import { updateProfileRoute } from "./routes/profile/update-profile-route";
 import { getProfilesSelect } from "./routes/profile/get-profiles-select";
+import { createDocumentEventRoute } from "./routes/documents/create-document-event-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -59,6 +60,7 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getDocumentsRoute)
 	app.register(deleteDocumentRoute)
 	app.register(getSummaryDocumentsRoute)
+	app.register(createDocumentEventRoute)
 
 	app.register(fetchProfilesRoute)
 	app.register(getProfileByIdRoute)
