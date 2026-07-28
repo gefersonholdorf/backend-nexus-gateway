@@ -1,7 +1,10 @@
 import { env } from "./env";
 import { app } from "./index";
+import { startBackupSyncWorker } from "./workers/backup-sync.worker";
 
 const port = env.PORT;
+
+startBackupSyncWorker();
 
 app.listen({ port, host: "0.0.0.0" }, (err) => {
 	if (err) {

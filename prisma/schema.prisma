@@ -113,11 +113,66 @@ model documents_events {
   cd_document_id Int       @db.UnsignedInt
   cd_user_id     Int       @db.UnsignedInt
   ds_ip          String?   @db.VarChar(100)
-  ds_user_agent  String?   @db.VarChar(100)
+  ds_user_agent  String?   @db.Text
   dt_created_at  DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
   documents      documents @relation(fields: [cd_document_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_events_documents")
   users          users     @relation(fields: [cd_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_events_users")
 
   @@index([cd_document_id], map: "FK_documents_events_documents")
   @@index([cd_user_id], map: "FK_documents_events_users")
+}
+
+model backup_jobs {
+  cd_id                  Int                 @id @default(autoincrement()) @db.UnsignedInt
+  cd_backup_automation   Int
+  ds_system              String              @db.VarChar(255)
+  ds_description         String              @db.VarChar(255)
+  ds_path                String              @db.VarChar(255)
+  nr_retention_days      Int
+  nr_backups_days        Int
+  st_enabled             Int                 @default(1) @db.TinyInt
+  dt_next_executation_at DateTime?           @db.DateTime(0)
+  dt_created_at          DateTime            @default(now()) @db.DateTime(0)
+  dt_updated_at          DateTime            @default(now()) @db.DateTime(0)
+  backup_executions      backup_executions[]
+}
+
+model backup_executions {
+  cd_id                   Int                          @id @default(autoincrement()) @db.UnsignedInt
+  cd_backup_job           Int                          @db.UnsignedInt
+  ds_execution_type       String                       @db.VarChar(20)
+  cd_nas_task             Int?
+  ds_external_id          String?                      @db.VarChar(100)
+  st_status               backup_executions_st_status? @default(RUNNING)
+  dt_started_at           DateTime                     @db.DateTime(0)
+  dt_finished_at          DateTime?                    @db.DateTime(0)
+  nr_duration_seconds     Int?
+  vl_size                 BigInt?
+  ds_file_path            String?                      @db.VarChar(500)
+  ds_error                String?                      @db.Text
+  dt_created_at           DateTime?                    @default(now()) @db.DateTime(0)
+  dt_updated_at           DateTime?                    @default(now()) @db.DateTime(0)
+  backup_execution_events backup_execution_events[]
+  backup_jobs             backup_jobs                  @relation(fields: [cd_backup_job], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_backup_execution_job")
+
+  @@index([cd_backup_job], map: "fk_backup_execution_job")
+}
+
+model backup_execution_events {
+  cd_id               Int               @id @default(autoincrement()) @db.UnsignedInt
+  cd_backup_execution Int               @db.UnsignedInt
+  tp_event            String            @db.VarChar(50)
+  st_status           BigInt            @default(1)
+  ds_message          String?           @db.VarChar(500)
+  dt_created_at       DateTime          @default(now()) @db.DateTime(0)
+  backup_executions   backup_executions @relation(fields: [cd_backup_execution], references: [cd_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_backup_execution_events_execution")
+
+  @@index([cd_backup_execution], map: "idx_execution")
+  @@index([cd_backup_execution, dt_created_at], map: "idx_execution_created")
+}
+
+enum backup_executions_st_status {
+  RUNNING
+  SUCCESS
+  FAILED
 }

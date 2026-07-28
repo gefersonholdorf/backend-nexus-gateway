@@ -35,6 +35,11 @@ import { updateProfileRoute } from "./routes/profile/update-profile-route";
 import { getProfilesSelect } from "./routes/profile/get-profiles-select";
 import { createDocumentEventRoute } from "./routes/documents/create-document-event-route";
 import { documentMetricsRoute } from "./routes/documents/documents-metrics-route";
+import { getBackupsRoute } from "./routes/backups/get-backups-route";
+import { startBackupRoute } from "./routes/backups/start-backup-nas-route";
+import { startBackupExecutionRoute } from "./routes/backups/start-backup-execution-route";
+import { createEventBackupExecutionRoute } from "./routes/backups/create-event-backup-execution-route";
+import { getDataMaskingRoute } from "./routes/data-masking/get-data-masking-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -80,4 +85,11 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getUsersPrivilegesRoute);
 	app.register(createPrivilegeRoute);
 	app.register(getAccessServerRoute);
+
+	app.register(getBackupsRoute)
+	app.register(startBackupRoute)
+	app.register(startBackupExecutionRoute)
+	app.register(createEventBackupExecutionRoute)
+
+	app.register(getDataMaskingRoute)
 };

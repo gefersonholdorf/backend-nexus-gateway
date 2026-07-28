@@ -11,6 +11,8 @@ import { env } from "./env";
 import fastifySwagger from "@fastify/swagger";
 import fastifyScalar from "@scalar/fastify-api-reference";
 import { routes } from "./routes";
+import websocket from "@fastify/websocket";
+import { backupWebSocketRoute } from "./websocket";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -74,6 +76,9 @@ app.register(fastifyJwt, {
 	secret: env.JWT_SECRET,
 });
 
+app.register(websocket)
+
+app.register(backupWebSocketRoute)
 app.register(routes, { prefix: "api/v1" });
 
 app.get("/status", (_, reply) => {

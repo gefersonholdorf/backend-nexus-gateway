@@ -20,7 +20,10 @@ const envSchema = z.object({
 	AZURE_TENANT_ID: z.string(),
 	AZURE_CLIENT_ID: z.string(),
 	AZURE_CLIENT_SECRET: z.string(),
-	TOKEN_JIRA: z.string()
+	TOKEN_JIRA: z.string(),
+	NAS_URL: z.url(),
+	NAS_LOGIN: z.string(),
+	NAS_PASSWORD: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
