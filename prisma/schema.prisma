@@ -171,8 +171,29 @@ model backup_execution_events {
   @@index([cd_backup_execution, dt_created_at], map: "idx_execution_created")
 }
 
+model masking_executions {
+  cd_id                  Int                          @id @default(autoincrement())
+  ds_execution_id        String                       @default("") @db.VarChar(200)
+  ds_path                String                       @db.VarChar(200)
+  ds_environment         String                       @default("HOMOLOGACAO") @db.VarChar(200)
+  st_status              masking_executions_st_status
+  cd_databases_expected  Int
+  cd_databases_processed Int
+  cd_databases_success   Int
+  cd_databases_error     Int
+  cd_records_processed   Int                          @default(0)
+  dt_started_at          DateTime                     @db.DateTime(0)
+  dt_finished_at         DateTime                     @db.DateTime(0)
+}
+
 enum backup_executions_st_status {
   RUNNING
   SUCCESS
   FAILED
+}
+
+enum masking_executions_st_status {
+  SUCCESS
+  PARTIAL_ERROR
+  ERROR
 }

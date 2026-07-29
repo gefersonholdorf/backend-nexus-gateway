@@ -1,3 +1,5 @@
+import { env } from "@/env";
+import { authenticate } from "@/middlewares/authenticate";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
@@ -80,46 +82,44 @@ const dataMaskingResponseSchema = z.object({
 export type DataMaskingResponse = z.infer<typeof dataMaskingResponseSchema>;
 
 export const getDataMaskingRoute = async (app: FastifyInstance) => {
-    app.withTypeProvider<ZodTypeProvider>().get("/data-masking", {
-        schema: {
-            title: "Get Data Maskings",
-            description: "Get Data Maskings",
-            tags: ["Data Maskings"],
-            response: {
-                200: z.array(dataMaskingResponseSchema),
-                500: z.object({
-                    message: z.string()
-                })
-            },
-        },
-    }, async (_, reply) => {
-        try {
-            const response1 = await fetch(
-                "https://api2.lusati.com.br/repositorio/nexus/diamante-mask-db/anonimizacao-2026-07-28T05-02-11-627Z.json"
-            );
+  app.withTypeProvider<ZodTypeProvider>().get("/data-masking/:id", {
+    preHandler: [authenticate],
+    schema: {
+      title: "Get Data Maskings",
+      description: "Get Data Maskings",
+      tags: ["Data Maskings"],
+      params: z.object({
+        id: z.string()
+      }),
+      response: {
+        200: dataMaskingResponseSchema,
+        404: z.object({
+          message: z.string()
+        }),
+        500: z.object({
+          message: z.string()
+        })
+      },
+    },
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params
+      const response = await fetch(`${env.STORAGE}/diamante-mask-db/${id}`);
 
-            const response2 = await fetch(
-                "https://api2.lusati.com.br/repositorio/nexus/diamante-mask-db/anonimizacao-2026-07-27T12-37-02-511Z.json"
-            );
+      if (!response.ok) {
+        return reply.status(404).send({
+          message: "File not found."
+        })
+      }
 
-            const response3 = await fetch(
-                "https://api2.lusati.com.br/repositorio/nexus/diamante-mask-db/anonimizacao-2026-07-27T12-37-02-511Z.json"
-            );
+      const data = await response.json() as DataMaskingResponse;
 
-            if (!response1.ok) {
-                throw new Error("Erro ao buscar arquivos");
-            }
-
-            const data1 = await response1.json() as DataMaskingResponse;
-            const data2 = await response2.json() as DataMaskingResponse;
-            const data3 = await response3.json() as DataMaskingResponse;
-
-            return reply.status(200).send([data1, data2, data3])
-        } catch (error) {
-            console.error(error)
-            return reply.status(500).send({
-                message: "Internal server error."
-            })
-        }
-    })
+      return reply.status(200).send(data)
+    } catch (error) {
+      console.error(error)
+      return reply.status(500).send({
+        message: "Internal server error."
+      })
+    }
+  })
 }

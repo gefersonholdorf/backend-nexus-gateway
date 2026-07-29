@@ -26,7 +26,7 @@ function parseNasDate(date: string) {
 }
 
 export function startBackupSyncWorker() {
-    cron.schedule("*/5 * * * *", async () => {
+    cron.schedule("*/30 * * * *", async () => {
         console.log("[BACKUP SYNC] Iniciando sincronização", new Date());
 
         try {
