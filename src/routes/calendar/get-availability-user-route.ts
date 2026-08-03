@@ -148,7 +148,7 @@ export const getAvailabilityUserRoute = async (app: FastifyInstance) => {
 				},
 			);
 
-			const availabilityData =
+			const availabilityData = 
 				(await availabilityResponse.json()) as MicrosoftAzureAvailabilitynReponse;
 
 			const availabilitys = availabilityData.value

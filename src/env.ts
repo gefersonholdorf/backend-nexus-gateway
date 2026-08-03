@@ -24,7 +24,10 @@ const envSchema = z.object({
 	NAS_URL: z.url(),
 	NAS_LOGIN: z.string(),
 	NAS_PASSWORD: z.string(),
-	STORAGE: z.url()
+	STORAGE: z.url(),
+	GLPI_URL:z.url(),
+	GLPI_AUTHORIZATION: z.string(),
+	GLPI_APP_TOKEN: z.string()
 });
 
 export const env = envSchema.parse(process.env);
