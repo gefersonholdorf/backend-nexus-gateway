@@ -45,6 +45,8 @@ import { getSummaryMaskingsRoute } from "./routes/data-masking/get-summary-maski
 import { fetchMaskingRoute } from "./routes/data-masking/fetch-masking-route";
 import { getReportsBackupsRoute } from "./routes/reports/get-reports-backups-route";
 import { getTicketsValidationsPendingsRoute } from "./routes/glpi/get-tickets-validation-route";
+import { sendNotificationsGLPIEventsRoute } from "./routes/notifications/send-notifications-glpi-events-route";
+import { getNotificationsMeRoute } from "./routes/notifications/get-notifications-me-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -104,4 +106,7 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getReportsBackupsRoute)
 
 	app.register(getTicketsValidationsPendingsRoute)
+
+	app.register(sendNotificationsGLPIEventsRoute)
+	app.register(getNotificationsMeRoute)
 };

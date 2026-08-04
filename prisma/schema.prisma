@@ -25,6 +25,7 @@ model users {
   dt_updated_at           DateTime           @default(now()) @db.DateTime(0)
   documents               documents[]
   documents_events        documents_events[]
+  notifications           notifications[]
   user_roles              user_roles[]
 }
 
@@ -184,6 +185,20 @@ model masking_executions {
   cd_records_processed   Int                          @default(0)
   dt_started_at          DateTime                     @db.DateTime(0)
   dt_finished_at         DateTime                     @db.DateTime(0)
+}
+
+model notifications {
+  cd_id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  cd_user_id    Int?      @db.UnsignedInt
+  ds_source     String    @db.VarChar(50)
+  ds_event_type String    @db.VarChar(100)
+  ds_title      String    @db.VarChar(255)
+  ds_message    String    @db.Text
+  dt_read_at    DateTime? @db.DateTime(0)
+  dt_created_at DateTime? @default(now()) @db.DateTime(0)
+  users         users?    @relation(fields: [cd_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_notifications_users")
+
+  @@index([cd_user_id, dt_read_at], map: "idx_user_read")
 }
 
 enum backup_executions_st_status {

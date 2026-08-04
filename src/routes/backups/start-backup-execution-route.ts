@@ -1,6 +1,4 @@
 import { prisma } from "@/db/prisma";
-import { backupWebSocketManager } from "@/websocket/backup-connections";
-import { deepStrictEqual } from "assert";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
@@ -47,18 +45,6 @@ export const startBackupExecutionRoute = async (app: FastifyInstance) => {
                     ds_execution_type: "AUTO",
                     dt_started_at: new Date(),
                     cd_backup_job: backupJob.cd_id
-                }
-            })
-
-            backupWebSocketManager.broadcast({
-                event: "operation.started",
-                operation: {
-                    id: String(executionId),
-                    type: "BACKUP",
-                    title: "diamante_4009",
-                    progress: 0,
-                    status: "RUNNING",
-                    startedAt: executionId.dt_started_at.toISOString(),
                 }
             })
 
