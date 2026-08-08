@@ -46,7 +46,7 @@ export const sendNotificationsGLPIEventsRoute = async (app: FastifyInstance) => 
                     });
                     break;
 
-                case "ticket.create":
+                case "glpi_new_ticket":
                     await prisma.notifications.create({
                         data: {
                             ds_event_type: "glpi_new_ticket",

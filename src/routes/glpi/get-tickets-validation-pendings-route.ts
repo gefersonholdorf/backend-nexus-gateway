@@ -192,8 +192,7 @@ export const getTicketsValidationsPendingsRoute = async (app: FastifyInstance) =
 
                 if(!user) {
                     pathUrl = null
-                    const responseUser = await fetch(
-                    `${env.GLPI_URL}/User/${ticketDetails.users_id_recipient}`,
+                    const responseUser = await fetch(`${env.GLPI_URL}/User/${ticketDetails.users_id_recipient}`,
                     {
                         headers: {
                             "Session-Token": loginGLPI.session_token,
