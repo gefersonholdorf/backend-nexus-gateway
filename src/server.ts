@@ -1,10 +1,12 @@
 import { env } from "./env";
 import { app } from "./index";
 import { startBackupSyncWorker } from "./workers/backup-sync.worker";
+import { startUpdatedCampaignActiveWorker } from "./workers/update-campaign-active";
 
 const port = env.PORT;
 
 startBackupSyncWorker();
+startUpdatedCampaignActiveWorker()
 
 app.listen({ port, host: "0.0.0.0" }, (err) => {
 	if (err) {

@@ -49,6 +49,16 @@ import { sendNotificationsGLPIEventsRoute } from "./routes/notifications/send-no
 import { getNotificationsMeRoute } from "./routes/notifications/get-notifications-me-route";
 import { getTicketsRoute } from "./routes/glpi/get-tickets-route";
 import { getTicketsSummaryRoute } from "./routes/glpi/get-tickets-summary-route";
+import { createCampaignRoute } from "./routes/campaigns/create-campaign-route";
+import { getCampaignsRoute } from "./routes/campaigns/fetch-campaigns-route";
+import { seenCampaignRoute } from "./routes/campaigns/seen-campaign-route";
+import { dismissedCampaignRoute } from "./routes/campaigns/dismissed-campaign-route";
+import { acessedCampaignRoute } from "./routes/campaigns/acessed-campaign-route";
+import { getCampaignActiveRoute } from "./routes/campaigns/get-campaign-active-route";
+import { getUsersByCampaign } from "./routes/campaigns/get-users-by-campaign-route";
+import { updateCampaignRoute } from "./routes/campaigns/update-campaign-route";
+import { deleteCampaignRoute } from "./routes/campaigns/delete-campaign-route";
+import { getSummaryCampaignsRoute } from "./routes/campaigns/get-summary-campaigns-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -113,4 +123,15 @@ export const routes = async (app: FastifyInstance) => {
 
 	app.register(sendNotificationsGLPIEventsRoute)
 	app.register(getNotificationsMeRoute)
+
+	app.register(createCampaignRoute)
+	app.register(getCampaignsRoute)
+	app.register(seenCampaignRoute)
+	app.register(dismissedCampaignRoute)
+	app.register(acessedCampaignRoute)
+	app.register(getCampaignActiveRoute)
+	app.register(getUsersByCampaign)
+	app.register(updateCampaignRoute)
+	app.register(deleteCampaignRoute)
+	app.register(getSummaryCampaignsRoute)
 };

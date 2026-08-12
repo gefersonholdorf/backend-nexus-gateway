@@ -25,12 +25,19 @@ function normalizeStatus(status: string): keyof Summary {
         return 'inProgress'
     }
 
+    if (
+        value.includes('em homologação')
+    ) {
+        return 'homologation'
+    }
+
     return 'pending'
 }
 
 type Summary = {
     pending: number
     inProgress: number
+    homologation: number
     correction: number
     completed: number
 }
@@ -48,6 +55,7 @@ export const getSummaryJira = async (app: FastifyInstance) => {
                     summary: z.object({
                         pending: z.number(),
                         inProgress: z.number(),
+                        homologation: z.number(),
                         correction: z.number(),
                         completed: z.number(),
                     }),
@@ -107,6 +115,7 @@ export const getSummaryJira = async (app: FastifyInstance) => {
                 pending: 0,
                 inProgress: 0,
                 correction: 0,
+                homologation: 0,
                 completed: 0,
             }
 
