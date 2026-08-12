@@ -44,6 +44,21 @@ export const createCampaignRoute = async (app: FastifyInstance) => {
 
             try {
                 const campaign = await prisma.$transaction(async (tx) => {
+                    const existingCampaignCode = await tx.campaigns.findUnique({
+                        where: {
+                            cd_code: code,
+                        },
+                        select: {
+                            cd_campaign: true,
+                        },
+                    });
+
+                    if (existingCampaignCode) {
+                        return reply.status(409).send({
+                            message: "Já existe uma campanha com este código."
+                        })
+                    }
+
                     const existingCampaign = await tx.campaigns.findUnique({
                         where: {
                             ds_month_year: monthYear,
