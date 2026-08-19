@@ -7,28 +7,29 @@ datasource db {
 }
 
 model users {
-  cd_id                   Int                    @id @default(autoincrement()) @db.UnsignedInt
-  ds_name                 String                 @db.VarChar(255)
-  ds_email                String                 @unique(map: "Index 2") @db.VarChar(255)
-  cd_id_glpi              String                 @db.VarChar(255)
-  cd_id_microsoft         String                 @db.VarChar(255)
-  ds_role_description     String                 @db.VarChar(255)
-  ds_vpn_name             String                 @db.VarChar(255)
-  ds_avatar_url           String?                @db.VarChar(100)
-  ds_password             String                 @db.VarChar(255)
-  fl_active               Int                    @default(0) @db.TinyInt
-  dt_last_login           DateTime?              @db.DateTime(0)
-  dt_last_password_change DateTime?              @db.DateTime(0)
-  ds_latitude             String                 @db.VarChar(100)
-  ds_longitude            String                 @db.VarChar(100)
-  dt_created_at           DateTime               @default(dbgenerated("(curdate())")) @db.DateTime(0)
-  dt_updated_at           DateTime               @default(now()) @db.DateTime(0)
-  campaign_user_access    campaign_user_access[]
-  campaigns               campaigns[]
-  documents               documents[]
-  documents_events        documents_events[]
-  notifications           notifications[]
-  user_roles              user_roles[]
+  cd_id                                       Int                    @id @default(autoincrement()) @db.UnsignedInt
+  ds_name                                     String                 @db.VarChar(255)
+  ds_email                                    String                 @unique(map: "Index 2") @db.VarChar(255)
+  cd_id_glpi                                  String                 @db.VarChar(255)
+  cd_id_microsoft                             String                 @db.VarChar(255)
+  ds_role_description                         String                 @db.VarChar(255)
+  ds_vpn_name                                 String                 @db.VarChar(255)
+  ds_avatar_url                               String?                @db.VarChar(100)
+  ds_password                                 String                 @db.VarChar(255)
+  fl_active                                   Int                    @default(0) @db.TinyInt
+  dt_last_login                               DateTime?              @db.DateTime(0)
+  dt_last_password_change                     DateTime?              @db.DateTime(0)
+  ds_latitude                                 String                 @db.VarChar(100)
+  ds_longitude                                String                 @db.VarChar(100)
+  dt_created_at                               DateTime               @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at                               DateTime               @default(now()) @db.DateTime(0)
+  campaign_user_access                        campaign_user_access[]
+  campaigns                                   campaigns[]
+  documents                                   documents[]
+  documents_documents_cd_owner_user_idTousers documents[]            @relation("documents_cd_owner_user_idTousers")
+  documents_events                            documents_events[]
+  notifications                               notifications[]
+  user_roles                                  user_roles[]
 }
 
 model privileges {
@@ -83,21 +84,24 @@ model user_roles {
 }
 
 model documents {
-  cd_id             Int                @id @default(autoincrement()) @db.UnsignedInt
-  ds_code           String             @db.VarChar(50)
-  ds_title          String             @db.VarChar(200)
-  ds_category       String             @db.VarChar(200)
-  ds_status         String             @db.VarChar(100)
-  ds_view_url       String?            @db.LongText
-  ds_edit_url       String?            @db.LongText
-  cd_create_user_id Int                @db.UnsignedInt
-  dt_created_at     DateTime           @default(now()) @db.DateTime(0)
-  dt_updated_at     DateTime           @default(now()) @db.DateTime(0)
-  users             users              @relation(fields: [cd_create_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_users")
-  documents_events  documents_events[]
-  documents_roles   documents_roles[]
+  cd_id                                   Int                @id @default(autoincrement()) @db.UnsignedInt
+  ds_code                                 String             @db.VarChar(50)
+  ds_title                                String             @db.VarChar(200)
+  ds_category                             String             @db.VarChar(200)
+  ds_status                               String             @db.VarChar(100)
+  ds_view_url                             String?            @db.LongText
+  ds_edit_url                             String?            @db.LongText
+  cd_create_user_id                       Int                @db.UnsignedInt
+  cd_owner_user_id                        Int?               @db.UnsignedInt
+  dt_created_at                           DateTime           @default(now()) @db.DateTime(0)
+  dt_updated_at                           DateTime           @default(now()) @db.DateTime(0)
+  users                                   users              @relation(fields: [cd_create_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_users")
+  users_documents_cd_owner_user_idTousers users?             @relation("documents_cd_owner_user_idTousers", fields: [cd_owner_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_users_2")
+  documents_events                        documents_events[]
+  documents_roles                         documents_roles[]
 
   @@index([cd_create_user_id], map: "FK_documents_users")
+  @@index([cd_owner_user_id], map: "FK_documents_users_2")
 }
 
 model documents_roles {

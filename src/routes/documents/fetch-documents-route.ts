@@ -32,16 +32,18 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                                 title: z.string(),
                                 viewUrl: z.string().optional().nullable(),
                                 editUrl: z.string().optional().nullable(),
+                                profilesCount: z.number(),
                                 profiles: z.array(z.object({
                                     id: z.number(),
                                     name: z.string(),
                                     description: z.string().nullable()
                                 })),
-                                createdBy: z.object({
+                                owner: z.object({
                                     id: z.number(),
                                     name: z.string(),
-                                    avatarUrl: z.string().nullable()
-                                }),
+                                    avatarUrl: z.string().nullable(),
+                                    roleDescription: z.string().nullable()
+                                }).nullable(),
                                 createdAt: z.string(),
                                 updatedAt: z.string(),
                             })
@@ -110,7 +112,7 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                             dt_updated_at: "desc",
                         },
                         include: {
-                            users: true,
+                            users_documents_cd_owner_user_idTousers: true,
                             documents_roles: {
                                 include: {
                                     roles: true
@@ -123,6 +125,8 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                     }),
                 ]);
 
+                const profilesCount = await prisma.roles.count()
+
                 const documentsFormated = documents.map((document) => {
                     return {
                         id: document.cd_id,
@@ -134,16 +138,18 @@ export const getDocumentsRoute = async (app: FastifyInstance) => {
                         editUrl: document.ds_edit_url,
                         createdAt: document.dt_created_at.toISOString(),
                         updatedAt: document.dt_updated_at.toISOString(),
+                        profilesCount,
                         profiles: document.documents_roles.map((dr) => ({
                             id: dr.roles.cd_id,
                             name: dr.roles.ds_name,
                             description: dr.roles.ds_description,
                         })),
-                        createdBy: {
-                            id: document.users.cd_id,
-                            name: document.users.ds_name,
-                            avatarUrl: document.users.ds_avatar_url,
-                        }
+                        owner: document.users_documents_cd_owner_user_idTousers ? {
+                            id: document.users_documents_cd_owner_user_idTousers.cd_id,
+                            name: document.users_documents_cd_owner_user_idTousers.ds_name,
+                            avatarUrl: document.users_documents_cd_owner_user_idTousers.ds_avatar_url,
+                            roleDescription: document.users_documents_cd_owner_user_idTousers?.ds_role_description
+                        } : null
                     }
                 })
 

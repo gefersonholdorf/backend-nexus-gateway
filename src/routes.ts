@@ -59,6 +59,7 @@ import { getUsersByCampaign } from "./routes/campaigns/get-users-by-campaign-rou
 import { updateCampaignRoute } from "./routes/campaigns/update-campaign-route";
 import { deleteCampaignRoute } from "./routes/campaigns/delete-campaign-route";
 import { getSummaryCampaignsRoute } from "./routes/campaigns/get-summary-campaigns-route";
+import { fetchDocumentsUsersProfilesRoute } from "./routes/documents/profiles/fetch-documents-users-profiles";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -87,6 +88,7 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(getSummaryDocumentsRoute)
 	app.register(createDocumentEventRoute)
 	app.register(documentMetricsRoute)
+	app.register(fetchDocumentsUsersProfilesRoute)
 
 	app.register(fetchProfilesRoute)
 	app.register(getProfileByIdRoute)
