@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model users {
+  cd_id                                       Int                    @id @default(autoincrement()) @db.UnsignedInt
+  ds_name                                     String                 @db.VarChar(255)
+  ds_email                                    String                 @unique(map: "Index 2") @db.VarChar(255)
+  cd_id_glpi                                  String                 @db.VarChar(255)
+  cd_id_microsoft                             String                 @db.VarChar(255)
+  ds_role_description                         String                 @db.VarChar(255)
+  ds_vpn_name                                 String                 @db.VarChar(255)
+  ds_avatar_url                               String?                @db.VarChar(100)
+  ds_password                                 String                 @db.VarChar(255)
+  fl_active                                   Int                    @default(0) @db.TinyInt
+  dt_last_login                               DateTime?              @db.DateTime(0)
+  dt_last_password_change                     DateTime?              @db.DateTime(0)
+  ds_latitude                                 String                 @db.VarChar(100)
+  ds_longitude                                String                 @db.VarChar(100)
+  dt_created_at                               DateTime               @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at                               DateTime               @default(now()) @db.DateTime(0)
+  campaign_user_access                        campaign_user_access[]
+  campaigns                                   campaigns[]
+  documents                                   documents[]
+  documents_documents_cd_owner_user_idTousers documents[]            @relation("documents_cd_owner_user_idTousers")
+  documents_events                            documents_events[]
+  notifications                               notifications[]
+  user_roles                                  user_roles[]
+}
+
+model privileges {
+  cd_id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  ds_user          String   @db.VarChar(100)
+  ds_server        String   @db.VarChar(100)
+  privilege        String   @db.VarChar(100)
+  ds_justification String   @db.VarChar(255)
+  status           String   @db.VarChar(50)
+  dt_start_at      DateTime @db.DateTime(0)
+  dt_expires_at    DateTime @db.DateTime(0)
+  dt_created_at    DateTime @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  dt_updated_at    DateTime @db.DateTime(0)
+}
+
+model permissions {
+  cd_id            Int                @id @default(autoincrement()) @db.UnsignedInt
+  ds_key           String             @unique(map: "ds_key") @db.VarChar(100)
+  ds_description   String?            @db.VarChar(255)
+  role_permissions role_permissions[]
+}
+
+model role_permissions {
+  cd_role       Int         @db.UnsignedInt
+  cd_permission Int         @db.UnsignedInt
+  roles         roles       @relation(fields: [cd_role], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "role_permissions_ibfk_1")
+  permissions   permissions @relation(fields: [cd_permission], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "role_permissions_ibfk_2")
+
+  @@id([cd_role, cd_permission])
+  @@index([cd_permission], map: "cd_permission")
+}
+
+model roles {
+  cd_id            Int                @id @default(autoincrement()) @db.UnsignedInt
+  ds_name          String             @db.VarChar(100)
+  ds_description   String?            @db.VarChar(255)
+  st_status        Int                @default(0) @db.TinyInt
+  dt_created_at    DateTime           @default(now()) @db.DateTime(0)
+  documents_roles  documents_roles[]
+  role_permissions role_permissions[]
+  user_roles       user_roles[]
+}
+
+model user_roles {
+  cd_user Int   @db.UnsignedInt
+  cd_role Int   @db.UnsignedInt
+  users   users @relation(fields: [cd_user], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "user_roles_ibfk_1")
+  roles   roles @relation(fields: [cd_role], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "user_roles_ibfk_2")
+
+  @@id([cd_user, cd_role])
+  @@index([cd_role], map: "cd_role")
+}
+
+model documents {
+  cd_id                                   Int                @id @default(autoincrement()) @db.UnsignedInt
+  ds_code                                 String             @db.VarChar(50)
+  ds_title                                String             @db.VarChar(200)
+  ds_category                             String             @db.VarChar(200)
+  ds_status                               String             @db.VarChar(100)
+  ds_view_url                             String?            @db.LongText
+  ds_edit_url                             String?            @db.LongText
+  cd_create_user_id                       Int                @db.UnsignedInt
+  cd_owner_user_id                        Int?               @db.UnsignedInt
+  dt_created_at                           DateTime           @default(now()) @db.DateTime(0)
+  dt_updated_at                           DateTime           @default(now()) @db.DateTime(0)
+  users                                   users              @relation(fields: [cd_create_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_users")
+  users_documents_cd_owner_user_idTousers users?             @relation("documents_cd_owner_user_idTousers", fields: [cd_owner_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_users_2")
+  documents_events                        documents_events[]
+  documents_roles                         documents_roles[]
+
+  @@index([cd_create_user_id], map: "FK_documents_users")
+  @@index([cd_owner_user_id], map: "FK_documents_users_2")
+}
+
+model documents_roles {
+  cd_id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  cd_document_id Int       @db.UnsignedInt
+  cd_role_id     Int       @db.UnsignedInt
+  documents      documents @relation(fields: [cd_document_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_roles_documents")
+  roles          roles     @relation(fields: [cd_role_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_roles_roles")
+
+  @@index([cd_document_id], map: "FK_documents_roles_documents")
+  @@index([cd_role_id], map: "FK_documents_roles_roles")
+}
+
+model documents_events {
+  cd_id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  cd_document_id Int       @db.UnsignedInt
+  cd_user_id     Int       @db.UnsignedInt
+  ds_ip          String?   @db.VarChar(100)
+  ds_user_agent  String?   @db.Text
+  dt_created_at  DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
+  documents      documents @relation(fields: [cd_document_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_events_documents")
+  users          users     @relation(fields: [cd_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_documents_events_users")
+
+  @@index([cd_document_id], map: "FK_documents_events_documents")
+  @@index([cd_user_id], map: "FK_documents_events_users")
+}
+
+model backup_jobs {
+  cd_id                  Int                 @id @default(autoincrement()) @db.UnsignedInt
+  cd_backup_automation   Int
+  ds_system              String              @db.VarChar(255)
+  ds_description         String              @db.VarChar(255)
+  ds_path                String              @db.VarChar(255)
+  nr_retention_days      Int
+  nr_backups_days        Int
+  st_enabled             Int                 @default(1) @db.TinyInt
+  dt_next_executation_at DateTime?           @db.DateTime(0)
+  dt_created_at          DateTime            @default(now()) @db.DateTime(0)
+  dt_updated_at          DateTime            @default(now()) @db.DateTime(0)
+  backup_executions      backup_executions[]
+}
+
+model backup_executions {
+  cd_id                   Int                          @id @default(autoincrement()) @db.UnsignedInt
+  cd_backup_job           Int                          @db.UnsignedInt
+  ds_execution_type       String                       @db.VarChar(20)
+  cd_nas_task             Int?
+  ds_external_id          String?                      @db.VarChar(100)
+  st_status               backup_executions_st_status? @default(RUNNING)
+  dt_started_at           DateTime                     @db.DateTime(0)
+  dt_finished_at          DateTime?                    @db.DateTime(0)
+  nr_duration_seconds     Int?
+  vl_size                 BigInt?
+  ds_file_path            String?                      @db.VarChar(500)
+  ds_error                String?                      @db.Text
+  dt_created_at           DateTime?                    @default(now()) @db.DateTime(0)
+  dt_updated_at           DateTime?                    @default(now()) @db.DateTime(0)
+  backup_execution_events backup_execution_events[]
+  backup_jobs             backup_jobs                  @relation(fields: [cd_backup_job], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_backup_execution_job")
+
+  @@index([cd_backup_job], map: "fk_backup_execution_job")
+}
+
+model backup_execution_events {
+  cd_id               Int               @id @default(autoincrement()) @db.UnsignedInt
+  cd_backup_execution Int               @db.UnsignedInt
+  tp_event            String            @db.VarChar(50)
+  st_status           BigInt            @default(1)
+  ds_message          String?           @db.VarChar(500)
+  dt_created_at       DateTime          @default(now()) @db.DateTime(0)
+  backup_executions   backup_executions @relation(fields: [cd_backup_execution], references: [cd_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_backup_execution_events_execution")
+
+  @@index([cd_backup_execution], map: "idx_execution")
+  @@index([cd_backup_execution, dt_created_at], map: "idx_execution_created")
+}
+
+model masking_executions {
+  cd_id                  Int                          @id @default(autoincrement())
+  ds_execution_id        String                       @default("") @db.VarChar(200)
+  ds_path                String                       @db.VarChar(200)
+  ds_environment         String                       @default("HOMOLOGACAO") @db.VarChar(200)
+  st_status              masking_executions_st_status
+  cd_databases_expected  Int
+  cd_databases_processed Int
+  cd_databases_success   Int
+  cd_databases_error     Int
+  cd_records_processed   Int                          @default(0)
+  dt_started_at          DateTime                     @db.DateTime(0)
+  dt_finished_at         DateTime                     @db.DateTime(0)
+}
+
+model notifications {
+  cd_id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  cd_user_id    Int?      @db.UnsignedInt
+  ds_source     String    @db.VarChar(50)
+  ds_event_type String    @db.VarChar(100)
+  ds_title      String    @db.VarChar(255)
+  ds_message    String    @db.Text
+  dt_read_at    DateTime? @db.DateTime(0)
+  dt_created_at DateTime? @default(now()) @db.DateTime(0)
+  users         users?    @relation(fields: [cd_user_id], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_notifications_users")
+
+  @@index([cd_user_id, dt_read_at], map: "idx_user_read")
+}
+
+model campaign_user_access {
+  cd_campaign_user_access Int       @id @default(autoincrement()) @db.UnsignedInt
+  cd_campaign             Int       @db.UnsignedInt
+  cd_user                 Int       @db.UnsignedInt
+  dt_first_seen           DateTime? @db.DateTime(0)
+  dt_dismissed            DateTime? @db.DateTime(0)
+  dt_accessed             DateTime? @db.DateTime(0)
+  dt_completed            DateTime? @db.DateTime(0)
+  dt_created              DateTime  @default(now()) @db.DateTime(0)
+  campaigns               campaigns @relation(fields: [cd_campaign], references: [cd_campaign], onDelete: NoAction, onUpdate: NoAction, map: "FK_campaign_user_access_campaigns")
+  users                   users     @relation(fields: [cd_user], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_campaign_user_access_users")
+
+  @@index([cd_campaign], map: "FK_campaign_user_access_campaigns")
+  @@index([cd_user], map: "idx_campaign_user")
+  @@index([cd_user, dt_accessed], map: "idx_campaign_user_pending")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model campaigns {
+  cd_campaign          Int                    @id @default(autoincrement()) @db.UnsignedInt
+  cd_code              String                 @unique(map: "cd_code") @db.VarChar(50)
+  ds_title             String                 @db.VarChar(255)
+  ds_month_year        String                 @unique(map: "uk_campaign_month_year") @default("") @db.VarChar(50)
+  ds_description       String?                @db.Text
+  st_status            String                 @default("DRAFT") @db.VarChar(20)
+  dt_publication       DateTime?              @unique(map: "uk_campaign_publication_date") @db.DateTime(0)
+  dt_created           DateTime               @default(now()) @db.Timestamp(0)
+  dt_updated           DateTime               @default(now()) @db.Timestamp(0)
+  cd_owner             Int                    @default(0) @db.UnsignedInt
+  ds_publication_url   String?                @db.Text
+  st_active            Boolean                @default(true)
+  campaign_user_access campaign_user_access[]
+  users                users                  @relation(fields: [cd_owner], references: [cd_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_campaigns_users")
+
+  @@index([cd_owner], map: "FK_campaigns_users")
+  @@index([dt_publication], map: "idx_campaign_publication")
+  @@index([st_status], map: "idx_campaign_status")
+}
+
+enum backup_executions_st_status {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+enum masking_executions_st_status {
+  SUCCESS
+  PARTIAL_ERROR
+  ERROR
+}
