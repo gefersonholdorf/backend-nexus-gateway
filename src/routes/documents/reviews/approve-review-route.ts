@@ -4,17 +4,21 @@ import type { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-export const deniedReviewRoute = async (app: FastifyInstance) => {
+export const approveReviewRoute = async (app: FastifyInstance) => {
 	app.withTypeProvider<ZodTypeProvider>().post(
-		"/documents/revisions/denied/:reviewId",
+		"/documents/revisions/approve/:reviewId",
 		{
 			preHandler: [authenticate],
 			schema: {
-				title: "Denied Review",
-				description: "Denied a new Review",
+				title: "Approve Review",
+				description: "Approve a new Review",
 				tags: ["Documents"],
 				params: z.object({
 					reviewId: z.coerce.number(),
+				}),
+				body: z.object({
+					viewUrl: z.url(),
+					reason: z.string(),
 				}),
 				response: {
 					200: z.object({
@@ -32,6 +36,7 @@ export const deniedReviewRoute = async (app: FastifyInstance) => {
 		async (request, reply) => {
 			const { reviewId } = request.params;
 			const { sub } = request.user;
+			const { reason, viewUrl } = request.body;
 
 			try {
 				const currentRevision = await prisma.document_revisions.findUnique({
@@ -51,7 +56,7 @@ export const deniedReviewRoute = async (app: FastifyInstance) => {
 						cd_id: reviewId,
 					},
 					data: {
-						ds_status: "CANCELADA",
+						ds_status: "APROVADA",
 						dt_approved_at: new Date(),
 						dt_completed_at: new Date(),
 						cd_approved_user_id: Number(sub),
@@ -63,12 +68,41 @@ export const deniedReviewRoute = async (app: FastifyInstance) => {
 						cd_revision_id: reviewId,
 					},
 					data: {
-						ds_status: "CANCELADA",
+						ds_status: "APROVADA",
+					},
+				});
+
+				const currentVersion = await prisma.document_versions.findFirst({
+					where: {
+						cd_revision_id: reviewId,
+					},
+					orderBy: {
+						cd_id: "desc",
+					},
+				});
+
+				const majorOld = currentVersion ? currentVersion.nr_major + 1 : 1;
+				const minorOld = currentVersion ? 0 : 0;
+
+				const versionOld = currentVersion ? `${majorOld}.${minorOld}` : "1.0";
+
+				await prisma.document_versions.create({
+					data: {
+						ds_version: versionOld,
+						nr_major: majorOld,
+						nr_minor: minorOld,
+						ds_change_log: reason,
+						ds_status: "APROVADA",
+						cd_document_id: currentRevision.cd_document_id,
+						cd_create_user_id: Number(sub),
+						cd_revision_id: currentRevision.cd_id,
+						ds_edit_url: currentVersion?.ds_edit_url ?? null,
+						ds_view_url: viewUrl,
 					},
 				});
 
 				return reply.status(200).send({
-					message: "Revisão cancelada com sucesso",
+					message: "Revisão aprovada com sucesso",
 				});
 			} catch (error) {
 				console.error(error);

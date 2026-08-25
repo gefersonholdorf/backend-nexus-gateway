@@ -63,8 +63,8 @@ import { fetchReviewsRoute } from "./routes/documents/reviews/fetch-reviews-rout
 import { fetchDocumentsRoute } from "./routes/documents/fetch-documents-route";
 import { createVersionRoute } from "./routes/documents/versions/create-version-route";
 import { createReviewRoute } from "./routes/documents/reviews/create-review-route";
-import { approvalReviewRoute } from "./routes/documents/reviews/approval-review-route";
-import { deniedReviewRoute } from "./routes/documents/reviews/denied-review-route";
+import { approveReviewRoute } from "./routes/documents/reviews/approve-review-route";
+import { rejectReviewRoute } from "./routes/documents/reviews/reject-review-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -97,8 +97,8 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(fetchDocumentsUsersProfilesRoute);
 	app.register(createVersionRoute);
 	app.register(createReviewRoute);
-	app.register(approvalReviewRoute);
-	app.register(deniedReviewRoute);
+	app.register(approveReviewRoute);
+	app.register(rejectReviewRoute);
 
 	// Fim
 
