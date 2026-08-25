@@ -10,8 +10,6 @@ import { getNextEventsRoute } from "./routes/calendar/get-nexts-events-route";
 import { getPresenceUserRoute } from "./routes/calendar/get-presence-user-route";
 import { createDocumentRoute } from "./routes/documents/create-document-route";
 import { deleteDocumentRoute } from "./routes/documents/delete-document-route";
-import { getDocumentsRoute } from "./routes/documents/fetch-documents-route";
-import { getSummaryDocumentsRoute } from "./routes/documents/get-summary-documents-route";
 import { updateDocumentRoute } from "./routes/documents/update-document-route";
 import { getProblemsRoute } from "./routes/get-problems";
 import { getProblemsDetailsRoute } from "./routes/get-problems-details";
@@ -60,10 +58,18 @@ import { updateCampaignRoute } from "./routes/campaigns/update-campaign-route";
 import { deleteCampaignRoute } from "./routes/campaigns/delete-campaign-route";
 import { getSummaryCampaignsRoute } from "./routes/campaigns/get-summary-campaigns-route";
 import { fetchDocumentsUsersProfilesRoute } from "./routes/documents/profiles/fetch-documents-users-profiles";
+import { getUsersListRoute } from "./routes/users/get-users-list-route";
+import { fetchReviewsRoute } from "./routes/documents/reviews/fetch-reviews-route";
+import { fetchDocumentsRoute } from "./routes/documents/fetch-documents-route";
+import { createVersionRoute } from "./routes/documents/versions/create-version-route";
+import { createReviewRoute } from "./routes/documents/reviews/create-review-route";
+import { approvalReviewRoute } from "./routes/documents/reviews/approval-review-route";
+import { deniedReviewRoute } from "./routes/documents/reviews/denied-review-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
 	app.register(updateMeRoute);
+	app.register(getUsersListRoute);
 	app.register(changePasswordMeRoute);
 	app.register(getVPNDetailsRoute);
 	app.register(getSummaryTicketsRoute);
@@ -81,21 +87,29 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(declinedEventByUserRoute);
 	app.register(getNextEventsRoute);
 
-	app.register(createDocumentRoute)
-	app.register(updateDocumentRoute)
-	app.register(getDocumentsRoute)
-	app.register(deleteDocumentRoute)
-	app.register(getSummaryDocumentsRoute)
-	app.register(createDocumentEventRoute)
-	app.register(documentMetricsRoute)
-	app.register(fetchDocumentsUsersProfilesRoute)
+	//Módulo - Gestão de Documentos
+	app.register(createDocumentRoute);
+	app.register(updateDocumentRoute);
+	app.register(fetchDocumentsRoute);
+	app.register(deleteDocumentRoute);
+	app.register(createDocumentEventRoute);
+	app.register(documentMetricsRoute);
+	app.register(fetchDocumentsUsersProfilesRoute);
+	app.register(createVersionRoute);
+	app.register(createReviewRoute);
+	app.register(approvalReviewRoute);
+	app.register(deniedReviewRoute);
 
-	app.register(fetchProfilesRoute)
-	app.register(getProfileByIdRoute)
-	app.register(getPermissionsRoute)
-	app.register(createProfileRoute)
-	app.register(updateProfileRoute)
-	app.register(getProfilesSelect)
+	// Fim
+
+	app.register(fetchReviewsRoute);
+
+	app.register(fetchProfilesRoute);
+	app.register(getProfileByIdRoute);
+	app.register(getPermissionsRoute);
+	app.register(createProfileRoute);
+	app.register(updateProfileRoute);
+	app.register(getProfilesSelect);
 
 	app.register(ipsRoute);
 
@@ -107,33 +121,33 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(createPrivilegeRoute);
 	app.register(getAccessServerRoute);
 
-	app.register(getBackupsRoute)
-	app.register(startBackupRoute)
-	app.register(startBackupExecutionRoute)
-	app.register(createEventBackupExecutionRoute)
+	app.register(getBackupsRoute);
+	app.register(startBackupRoute);
+	app.register(startBackupExecutionRoute);
+	app.register(createEventBackupExecutionRoute);
 
-	app.register(getDataMaskingRoute)
-	app.register(createMaskingRoute)
-	app.register(getSummaryMaskingsRoute)
-	app.register(fetchMaskingRoute)
+	app.register(getDataMaskingRoute);
+	app.register(createMaskingRoute);
+	app.register(getSummaryMaskingsRoute);
+	app.register(fetchMaskingRoute);
 
-	app.register(getReportsBackupsRoute)
+	app.register(getReportsBackupsRoute);
 
-	app.register(getTicketsValidationsPendingsRoute)
-	app.register(getTicketsRoute)
-	app.register(getTicketsSummaryRoute)
+	app.register(getTicketsValidationsPendingsRoute);
+	app.register(getTicketsRoute);
+	app.register(getTicketsSummaryRoute);
 
-	app.register(sendNotificationsGLPIEventsRoute)
-	app.register(getNotificationsMeRoute)
+	app.register(sendNotificationsGLPIEventsRoute);
+	app.register(getNotificationsMeRoute);
 
-	app.register(createCampaignRoute)
-	app.register(getCampaignsRoute)
-	app.register(seenCampaignRoute)
-	app.register(dismissedCampaignRoute)
-	app.register(acessedCampaignRoute)
-	app.register(getCampaignActiveRoute)
-	app.register(getUsersByCampaign)
-	app.register(updateCampaignRoute)
-	app.register(deleteCampaignRoute)
-	app.register(getSummaryCampaignsRoute)
+	app.register(createCampaignRoute);
+	app.register(getCampaignsRoute);
+	app.register(seenCampaignRoute);
+	app.register(dismissedCampaignRoute);
+	app.register(acessedCampaignRoute);
+	app.register(getCampaignActiveRoute);
+	app.register(getUsersByCampaign);
+	app.register(updateCampaignRoute);
+	app.register(deleteCampaignRoute);
+	app.register(getSummaryCampaignsRoute);
 };

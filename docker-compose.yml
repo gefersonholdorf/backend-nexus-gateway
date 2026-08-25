@@ -1,0 +1,55 @@
+services:
+  nexus-db-prod:
+    image: mysql:8.0.33
+    container_name: nexus-db-prod
+    restart: unless-stopped
+    ports:
+      - 0.0.0.0:3308:3306
+    volumes:
+      - ../infra/mysql-prod-nexus/db/:/var/lib/mysql
+      - ../infra/mysql-prod-nexus.cnf:/etc/mysql/conf.d/custom.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: "X3Jt29xVa3DUOR"
+    networks:
+      - nexus-db-network
+
+  nexus-db-replica:
+    image: mysql:8.0.33
+    container_name: nexus-db-replica
+    restart: unless-stopped
+    ports:
+      - 0.0.0.0:3307:3306
+    volumes:
+      - ../infra/mysql-replica-nexus/db/:/var/lib/mysql
+      - ../infra/mysql-replica-nexus.cnf:/etc/mysql/conf.d/custom.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: "X3Jt29xVa3DUOR"
+    networks:
+      - nexus-db-network
+
+  orchestrator:
+    image: openarkcode/orchestrator:latest
+    container_name: orchestrator
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../infra/orchestrator.conf.json:/etc/orchestrator.conf.json
+    networks:
+      - nexus-db-network
+
+  orchestrator-db:
+    image: mysql:8.0.33
+    container_name: orchestrator-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "H7ff55dUU8h"
+      MYSQL_DATABASE: orchestrator
+    volumes:
+      - ../infra/orchestrator-db:/var/lib/mysql
+    networks:
+      - nexus-db-network
+
+networks:
+  nexus-db-network:
+    driver: bridge
