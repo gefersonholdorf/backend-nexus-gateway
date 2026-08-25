@@ -50,6 +50,7 @@ export const fetchReviewsRoute = async (app: FastifyInstance) => {
 									"APROVADA",
 									"CANCELADA",
 								]),
+								createdAt: z.string().nullable(),
 								dueDate: z.string().nullable(),
 								completedAt: z.string().nullable(),
 								approvedAt: z.string().nullable(),
@@ -182,6 +183,9 @@ export const fetchReviewsRoute = async (app: FastifyInstance) => {
 								}
 							: null,
 						status: revision.ds_status,
+						createdAt: revision.dt_created_at
+							? revision.dt_created_at.toISOString()
+							: null,
 						dueDate: revision.dt_due_date
 							? revision.dt_due_date.toISOString()
 							: null,

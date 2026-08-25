@@ -65,6 +65,7 @@ import { createVersionRoute } from "./routes/documents/versions/create-version-r
 import { createReviewRoute } from "./routes/documents/reviews/create-review-route";
 import { approveReviewRoute } from "./routes/documents/reviews/approve-review-route";
 import { rejectReviewRoute } from "./routes/documents/reviews/reject-review-route";
+import { getReviewByIdRoute } from "./routes/documents/reviews/get-review-by-id-route";
 
 export const routes = async (app: FastifyInstance) => {
 	app.register(createUserRoute);
@@ -99,6 +100,7 @@ export const routes = async (app: FastifyInstance) => {
 	app.register(createReviewRoute);
 	app.register(approveReviewRoute);
 	app.register(rejectReviewRoute);
+	app.register(getReviewByIdRoute);
 
 	// Fim
 
