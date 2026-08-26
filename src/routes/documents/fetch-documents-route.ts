@@ -49,9 +49,11 @@ export const fetchDocumentsRoute = async (app: FastifyInstance) => {
 								version: z.string().nullable(),
 								classification: z.string().nullable(),
 								process: z.string().nullable(),
+								isDocumentRevisionPending: z.boolean(),
 								viewUrl: z.string().optional().nullable(),
 								editUrl: z.string().optional().nullable(),
 								profilesCount: z.number(),
+								reviewId: z.number().nullable(),
 								profiles: z.array(
 									z.object({
 										id: z.number(),
@@ -158,43 +160,58 @@ export const fetchDocumentsRoute = async (app: FastifyInstance) => {
 
 				const profilesCount = await prisma.roles.count();
 
-				const documentsFormated = documents.map((document) => {
-					const lastRevision = document.document_revisions[0] ?? null;
-					const lastVersion = lastRevision?.document_versions[0] ?? null;
-					const version = lastVersion?.ds_version ?? null;
-					return {
-						id: document.cd_id,
-						code: document.ds_code,
-						category: document.ds_category,
-						status: document.ds_status,
-						title: document.ds_title,
-						classification: document.ds_classification ?? null,
-						process: document.ds_process ?? null,
-						createdAt: document.dt_created_at.toISOString(),
-						updatedAt: document.dt_updated_at.toISOString(),
-						nextReview: document.dt_next_review?.toISOString() ?? null,
-						version: version,
-						profilesCount,
-						profiles: document.documents_roles.map((dr) => ({
-							id: dr.roles.cd_id,
-							name: dr.roles.ds_name,
-							description: dr.roles.ds_description,
-						})),
-						owner: document.users_documents_cd_owner_user_idTousers
-							? {
-									id: document.users_documents_cd_owner_user_idTousers.cd_id,
-									name: document.users_documents_cd_owner_user_idTousers
-										.ds_name,
-									avatarUrl:
-										document.users_documents_cd_owner_user_idTousers
-											.ds_avatar_url,
-									roleDescription:
-										document.users_documents_cd_owner_user_idTousers
-											?.ds_role_description,
-								}
-							: null,
-					};
-				});
+				const documentsFormated = await Promise.all(
+					documents.map(async (document) => {
+						const lastRevision = document.document_revisions[0] ?? null;
+						const lastVersion = lastRevision?.document_versions[0] ?? null;
+						const version = lastVersion?.ds_version ?? null;
+
+						const isDocumentRevisionPending =
+							await prisma.document_revisions.findFirst({
+								where: {
+									cd_document_id: document.cd_id,
+									ds_status: { in: ["ABERTA", "EM_APROVACAO"] },
+								},
+							});
+
+						return {
+							id: document.cd_id,
+							code: document.ds_code,
+							category: document.ds_category,
+							status: document.ds_status,
+							title: document.ds_title,
+							classification: document.ds_classification ?? null,
+							process: document.ds_process ?? null,
+							createdAt: document.dt_created_at.toISOString(),
+							updatedAt: document.dt_updated_at.toISOString(),
+							nextReview: document.dt_next_review?.toISOString() ?? null,
+							isDocumentRevisionPending: isDocumentRevisionPending
+								? false
+								: true,
+							reviewId: isDocumentRevisionPending?.cd_id ?? null,
+							version: version,
+							profilesCount,
+							profiles: document.documents_roles.map((dr) => ({
+								id: dr.roles.cd_id,
+								name: dr.roles.ds_name,
+								description: dr.roles.ds_description,
+							})),
+							owner: document.users_documents_cd_owner_user_idTousers
+								? {
+										id: document.users_documents_cd_owner_user_idTousers.cd_id,
+										name: document.users_documents_cd_owner_user_idTousers
+											.ds_name,
+										avatarUrl:
+											document.users_documents_cd_owner_user_idTousers
+												.ds_avatar_url,
+										roleDescription:
+											document.users_documents_cd_owner_user_idTousers
+												?.ds_role_description,
+									}
+								: null,
+						};
+					}),
+				);
 
 				return reply.status(200).send({
 					documents: documentsFormated,

@@ -19,6 +19,7 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
 					title: z.string().min(1, "Título obrigatório"),
 					category: z.string().min(1, "Categoria obrigatória"),
 					classification: z.string().min(1, "Classificação obrigatório"),
+					editUrl: z.url("Url de edição é obrigatório"),
 					process: z.string().min(1, "Área/Processo obrigatório"),
 					ownerId: z.string().min(1, "Deve ser selecionado o responsável"),
 					profiles: z
@@ -47,6 +48,7 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
 				classification,
 				ownerId,
 				process,
+				editUrl,
 			} = request.body;
 			const { sub } = request.user;
 
@@ -94,6 +96,7 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
 							cd_create_user_id: Number(sub),
 							ds_change_log: "Versão inicial do documento.",
 							ds_status: "RASCUNHO",
+							ds_edit_url: editUrl,
 						},
 					});
 

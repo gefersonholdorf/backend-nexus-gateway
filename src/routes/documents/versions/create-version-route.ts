@@ -35,7 +35,7 @@ export const createVersionRoute = async (app: FastifyInstance) => {
 			},
 		},
 		async (request, reply) => {
-			const { changeLog, editUrl } = request.body;
+			const { changeLog, editUrl, onwerId } = request.body;
 			const { documentId } = request.params;
 			const { sub } = request.user;
 
@@ -87,7 +87,7 @@ export const createVersionRoute = async (app: FastifyInstance) => {
 						ds_change_log: changeLog,
 						ds_status: "RASCUNHO",
 						cd_document_id: documentId,
-						cd_create_user_id: Number(sub),
+						cd_create_user_id: Number(onwerId),
 						ds_edit_url: editUrl ?? null,
 						cd_revision_id: revisionActive.cd_id,
 						ds_view_url: null,

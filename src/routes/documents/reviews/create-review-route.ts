@@ -39,6 +39,12 @@ export const createReviewRoute = async (app: FastifyInstance) => {
 			const { sub } = request.user;
 
 			try {
+				const thereIsAReviewProcess = await prisma.document_revisions.count({
+					where: {
+						cd_document_id: documentId,
+					},
+				});
+
 				const revisionActive = await prisma.document_revisions.findFirst({
 					where: {
 						ds_status: { in: ["APROVADA", "CANCELADA"] },
@@ -46,7 +52,7 @@ export const createReviewRoute = async (app: FastifyInstance) => {
 					},
 				});
 
-				if (!revisionActive) {
+				if (!revisionActive && thereIsAReviewProcess > 0) {
 					return reply.status(409).send({
 						message:
 							"Já existe uma revisão aberta, favor finalizar essa revisão primeiro para depois cadastrar uma nova.",
@@ -92,6 +98,15 @@ export const createReviewRoute = async (app: FastifyInstance) => {
 						cd_revision_id: review.cd_id,
 						ds_view_url: null,
 						ds_edit_url: null,
+					},
+				});
+
+				await prisma.documents.update({
+					where: {
+						cd_id: documentId,
+					},
+					data: {
+						ds_status: "EM_REVISAO",
 					},
 				});
 

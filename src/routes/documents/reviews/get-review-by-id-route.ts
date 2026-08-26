@@ -56,6 +56,10 @@ export const getReviewByIdRoute = async (app: FastifyInstance) => {
 									id: z.number(),
 									version: z.string(),
 									changeLog: z.string().nullable(),
+									editUrl: z.string().nullable(),
+									viewUrl: z.string().nullable(),
+									major: z.number(),
+									minor: z.number(),
 									status: z.enum([
 										"RASCUNHO",
 										"EM_APROVACAO",
@@ -118,6 +122,10 @@ export const getReviewByIdRoute = async (app: FastifyInstance) => {
 					return {
 						id: version.cd_id,
 						version: version.ds_version,
+						editUrl: version.ds_edit_url ?? null,
+						viewUrl: version.ds_view_url ?? null,
+						major: version.nr_major,
+						minor: version.nr_minor,
 						changeLog: version.ds_change_log ?? null,
 						status: version.ds_status,
 						createdAt: version.dt_created_at.toISOString(),
