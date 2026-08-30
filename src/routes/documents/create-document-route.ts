@@ -51,65 +51,111 @@ export const createDocumentRoute = async (app: FastifyInstance) => {
 				editUrl,
 			} = request.body;
 			const { sub } = request.user;
+			const ip =
+				request.headers["x-forwarded-for"]?.toString().split(",")[0] ??
+				request.headers["x-real-ip"]?.toString() ??
+				request.ip;
 
 			try {
-				const document = await prisma.$transaction(async (tx) => {
-					const document = await tx.documents.create({
-						data: {
-							ds_code: code.toUpperCase(),
-							ds_category: category,
-							ds_status: "RASCUNHO",
-							ds_title: title.toUpperCase(),
-							cd_create_user_id: Number(sub),
-							cd_owner_user_id: Number(ownerId),
-							ds_process: process,
-							ds_classification: classification,
-							nr_review_period_months: 12,
-						},
-					});
+				const { document, revision, version } = await prisma.$transaction(
+					async (tx) => {
+						const document = await tx.documents.create({
+							data: {
+								ds_code: code.toUpperCase(),
+								ds_category: category,
+								ds_status: "RASCUNHO",
+								ds_title: title.toUpperCase(),
+								cd_create_user_id: Number(sub),
+								cd_owner_user_id: Number(ownerId),
+								ds_process: process,
+								ds_classification: classification,
+								nr_review_period_months: 12,
+							},
+						});
 
-					await tx.documents_roles.createMany({
-						data: profiles.map((profileId) => ({
-							cd_document_id: document.cd_id,
-							cd_role_id: profileId,
-						})),
-					});
+						await tx.documents_roles.createMany({
+							data: profiles.map((profileId) => ({
+								cd_document_id: document.cd_id,
+								cd_role_id: profileId,
+							})),
+						});
 
-					const dueDateRevision = new Date();
-					dueDateRevision.setDate(dueDateRevision.getDate() + 15);
+						const dueDateRevision = new Date();
+						dueDateRevision.setDate(dueDateRevision.getDate() + 15);
 
-					const revision = await tx.document_revisions.create({
-						data: {
-							cd_document_id: document.cd_id,
-							ds_reason: "Criação inicial do documento",
-							dt_due_date: dueDateRevision,
-							cd_open_user_id: Number(sub),
-							ds_status: "ABERTA",
-						},
-					});
+						const revision = await tx.document_revisions.create({
+							data: {
+								cd_document_id: document.cd_id,
+								ds_reason: "Criação inicial do documento",
+								dt_due_date: dueDateRevision,
+								cd_open_user_id: Number(sub),
+								ds_status: "ABERTA",
+								fl_auto_opened: true,
+							},
+						});
 
-					const version = await tx.document_versions.create({
-						data: {
-							cd_document_id: document.cd_id,
-							cd_revision_id: revision.cd_id,
-							ds_version: "0.1",
-							cd_create_user_id: Number(sub),
-							ds_change_log: "Versão inicial do documento.",
-							ds_status: "RASCUNHO",
-							ds_edit_url: editUrl,
-						},
-					});
+						const version = await tx.document_versions.create({
+							data: {
+								cd_document_id: document.cd_id,
+								cd_revision_id: revision.cd_id,
+								ds_version: "0.1",
+								cd_create_user_id: Number(sub),
+								ds_change_log: "Versão inicial do documento.",
+								ds_status: "RASCUNHO",
+								ds_edit_url: editUrl,
+							},
+						});
 
-					await tx.documents.update({
-						where: {
-							cd_id: document.cd_id,
-						},
-						data: {
-							cd_current_version_id: version.cd_id,
-						},
-					});
+						await tx.documents.update({
+							where: {
+								cd_id: document.cd_id,
+							},
+							data: {
+								cd_current_version_id: version.cd_id,
+							},
+						});
 
-					return document;
+						return {
+							document,
+							revision,
+							version,
+						};
+					},
+				);
+
+				const logs = [
+					{
+						ds_event_type: "CREATE_DOCUMENT",
+						cd_document_id: document.cd_id,
+						cd_revision_id: revision.cd_id,
+						cd_user_id: Number(sub),
+						ds_details: "Documento Criado com sucesso.",
+						ds_user_agent: request.headers["user-agent"] || null,
+						ds_ip: ip,
+					},
+					{
+						ds_event_type: "CREATE_REVIEW",
+						cd_document_id: document.cd_id,
+						cd_revision_id: revision.cd_id,
+						cd_user_id: Number(sub),
+						ds_details: "Revisão automática criada com sucesso.",
+						ds_user_agent: request.headers["user-agent"] || null,
+						ds_ip: ip,
+					},
+					{
+						ds_event_type: "CREATE_VERSION",
+						cd_document_id: document.cd_id,
+						cd_revision_id: revision.cd_id,
+						cd_version_id: version.cd_id,
+						cd_user_id: Number(sub),
+						ds_details: "Versão automática 0.1 criada com sucesso.",
+						ds_user_agent: request.headers["user-agent"] || null,
+						ds_ip: ip,
+					},
+				];
+
+				await prisma.documents_events.createMany({
+					data: logs,
 				});
 
 				return reply.status(201).send({
